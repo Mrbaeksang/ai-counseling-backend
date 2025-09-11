@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+    
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+        show_sql: true
+        
+  h2:
+    console:
+      enabled: false
+      
+# 테스트용 외부 서비스 설정
+openrouter:
+  api-key: ${OPENROUTER_API_KEY}  # .env 파일에서 로드된 환경변수 사용
+  model: meta-llama/llama-3.2-3b-instruct  # Llama 모델로 변경 (저렴하고 rate limit 낮음)
+  site-url: http://localhost:8080
+  site-name: Test App
+  api:
+    enabled: true  # 통합 테스트를 위해 활성화
+    
+redis:
+  enabled: false
+
+# JWT 설정 (테스트용 - 최소 256비트 = 32바이트 이상의 키 필요)
+jwt:
+  secret: test-secret-key-for-jwt-authentication-that-is-long-enough-to-meet-security-requirements-2025
+  expiration-time: 86400000  # 24시간
+  refresh-expiration-time: 604800000  # 7일

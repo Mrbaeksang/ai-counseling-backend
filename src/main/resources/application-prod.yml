@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영에서는 validate만
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        
+# 운영 환경 CORS 설정
+cors:
+  allowed-origins: 
+    - ${FRONTEND_URL}
+  allowed-methods: 
+    - GET
+    - POST
+    - PUT
+    - DELETE
+  allowed-headers: "*"
+  allow-credentials: true
+  
+# 운영 환경 로깅
+logging:
+  level:
+    root: WARN
+    com.aicounseling: INFO
+    
+# 운영 환경 보안 설정
+server:
+  error:
+    include-message: never
+    include-stacktrace: never

@@ -398,6 +398,12 @@ class ChatSessionService(
         }
         session.lastMessageAt = LocalDateTime.now()
 
+        // AI가 세션 종료를 요청한 경우
+        if (parsedResponse.shouldEndSession) {
+            session.closedAt = LocalDateTime.now()
+            logger.info("AI가 세션 종료를 요청함 - sessionId: {}", sessionId)
+        }
+
         // AI 메시지 저장
         val aiMessage =
             Message(
@@ -555,6 +561,14 @@ class ChatSessionService(
                 appendLine("- 대화 내용과 상황에 맞게 자연스럽게 선택하세요")
                 appendLine("- 이전 단계로는 돌아가지 마세요")
                 appendLine()
+                appendLine("[세션 종료 안내]")
+                appendLine("상담을 자연스럽게 마무리해야 할 때:")
+                appendLine("- 내담자가 충분한 통찰을 얻었을 때")
+                appendLine("- 대화가 자연스럽게 마무리되었을 때")
+                appendLine("- 상담 목표가 달성되었을 때")
+                appendLine("- CLOSING 단계에서 작별 인사를 나눈 후")
+                appendLine("→ 응답에 \"shouldEnd\": true 를 포함시켜주세요")
+                appendLine()
                 appendLine(
                     AppConstants.Session.PROMPT_RESPONSE_FORMAT.format(phaseResult.availablePhases),
                 )
@@ -646,7 +660,9 @@ class ChatSessionService(
                     null
                 }
 
-            ParsedResponse(content, phase, title)
+            val shouldEndSession = jsonNode.get("shouldEnd")?.asBoolean() ?: false
+
+            ParsedResponse(content, phase, title, shouldEndSession)
         } catch (e: JsonProcessingException) {
             logger.error("JSON 파싱 실패: {}", e.message)
             parseFallbackResponse(rawResponse)
@@ -682,6 +698,7 @@ class ChatSessionService(
             content = fallbackContent,
             phase = CounselingPhase.ENGAGEMENT,
             title = null,
+            shouldEndSession = false,
         )
     }
 
@@ -692,5 +709,6 @@ class ChatSessionService(
         val content: String,
         val phase: CounselingPhase,
         val title: String?,
+        val shouldEndSession: Boolean = false,
     )
 }
