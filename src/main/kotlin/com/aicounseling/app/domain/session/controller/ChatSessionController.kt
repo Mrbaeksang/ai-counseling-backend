@@ -55,6 +55,7 @@ class ChatSessionController(
     @GetMapping
     fun getUserSessions(
         @RequestParam(required = false) bookmarked: Boolean?,
+        @RequestParam(required = false) isClosed: Boolean?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): RsData<PagedResponse<SessionListResponse>> {
@@ -71,7 +72,7 @@ class ChatSessionController(
                 sort = Sort.by(Sort.Direction.DESC, "lastMessageAt"),
             )
         // N+1 문제가 이미 해결된 getUserSessions 호출
-        val sessionPage = sessionService.getUserSessions(userId, bookmarked, pageable)
+        val sessionPage = sessionService.getUserSessions(userId, bookmarked, isClosed, pageable)
 
         // PagedResponse로 변환 (이미 SessionListResponse로 매핑됨)
         val response = PagedResponse.from(sessionPage)

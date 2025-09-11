@@ -20,4 +20,5 @@ data class SessionListResponse(
     val lastMessageAt: LocalDateTime,
     val isBookmarked: Boolean,
     val avatarUrl: String? = null,
+    val closedAt: LocalDateTime? = null,
 )

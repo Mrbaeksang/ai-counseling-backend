@@ -15,12 +15,14 @@ interface ChatSessionRepositoryCustom {
      *
      * @param userId 사용자 ID
      * @param bookmarked 북마크 필터 (null이면 전체, true면 북마크만)
+     * @param isClosed 종료 상태 필터 (null이면 전체, true면 종료된 세션, false면 진행중)
      * @param pageable 페이징 정보
      * @return 세션 목록 DTO Page
      */
     fun findSessionsWithCounselor(
         userId: Long,
         bookmarked: Boolean?,
+        isClosed: Boolean?,
         pageable: Pageable,
     ): Page<SessionListResponse>
 }

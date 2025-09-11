@@ -22,6 +22,7 @@ class ChatSessionRepositoryImpl(
     override fun findSessionsWithCounselor(
         userId: Long,
         bookmarked: Boolean?,
+        isClosed: Boolean?,
         pageable: Pageable,
     ): Page<SessionListResponse> {
         // JDSL의 selectNew를 사용하여 DTO로 직접 프로젝션 (타입 안정성 보장)
@@ -41,6 +42,7 @@ class ChatSessionRepositoryImpl(
                     ),
                     path(ChatSession::isBookmarked),
                     path(Counselor::avatarUrl),
+                    path(ChatSession::closedAt),
                 ).from(
                     entity(ChatSession::class),
                     join(Counselor::class).on(
@@ -50,6 +52,13 @@ class ChatSessionRepositoryImpl(
                     and(
                         path(ChatSession::userId).eq(userId),
                         bookmarked?.let { path(ChatSession::isBookmarked).eq(it) },
+                        isClosed?.let {
+                            if (it) {
+                                path(ChatSession::closedAt).isNotNull()
+                            } else {
+                                path(ChatSession::closedAt).isNull()
+                            }
+                        },
                     ),
                 ).orderBy(
                     path(ChatSession::lastMessageAt).desc().nullsLast(),

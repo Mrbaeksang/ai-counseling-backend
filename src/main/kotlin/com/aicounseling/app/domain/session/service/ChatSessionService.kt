@@ -45,6 +45,7 @@ class ChatSessionService(
     /**
      * 사용자의 상담 세션 목록 조회 (N+1 문제 해결)
      * @param bookmarked 북마크 필터 (null이면 전체, true면 북마크만)
+     * @param isClosed 종료 상태 필터 (null이면 전체, true면 종료된 세션, false면 진행중)
      * @param pageable 페이징 정보
      * @return Page<SessionListResponse> 페이징 정보를 포함한 세션 목록
      */
@@ -52,11 +53,12 @@ class ChatSessionService(
     fun getUserSessions(
         userId: Long,
         bookmarked: Boolean?,
+        isClosed: Boolean?,
         pageable: Pageable,
     ): Page<SessionListResponse> {
         // Custom Repository 메서드를 사용하여 N+1 문제 해결
         // 한 번의 쿼리로 Session과 Counselor 정보를 함께 조회
-        return sessionRepository.findSessionsWithCounselor(userId, bookmarked, pageable)
+        return sessionRepository.findSessionsWithCounselor(userId, bookmarked, isClosed, pageable)
     }
 
     /**
@@ -379,7 +381,6 @@ class ChatSessionService(
         isFirstMessage: Boolean,
     ): Pair<Message, ChatSession> {
         val sessionId = session.id
-        val messageCount = messageRepository.countBySessionId(sessionId)
 
         // userMessage 파라미터 사용 (Detekt UnusedParameter 해결)
         logger.debug("사용자 메시지 저장 - sessionId: {}, messageId: {}", sessionId, userMessage.id)
@@ -388,7 +389,7 @@ class ChatSessionService(
         val parsedResponse = parseAiResponse(aiResponse, isFirstMessage)
 
         // Phase 검증
-        val phaseResult = determinePhase(sessionId, messageCount, parsedResponse.phase)
+        val phaseResult = determinePhase(sessionId, parsedResponse.phase)
 
         // 세션 업데이트
         if (isFirstMessage && parsedResponse.title != null) {
@@ -466,7 +467,6 @@ class ChatSessionService(
      */
     private fun determinePhase(
         sessionId: Long,
-        @Suppress("UnusedParameter") messageCount: Long,
         suggestedPhase: CounselingPhase? = null,
     ): PhaseResult {
         val lastPhase =
@@ -494,7 +494,6 @@ class ChatSessionService(
         return PhaseResult(
             currentPhase = validPhase,
             lastPhase = lastPhase,
-            minimumPhase = lastPhase,
             availablePhases = availablePhases,
         )
     }
@@ -503,13 +502,8 @@ class ChatSessionService(
      * Phase 관련 정보를 담는 데이터 클래스
      */
     data class PhaseResult(
-        // 현재/검증된 단계
         val currentPhase: CounselingPhase,
-        // AI의 마지막 단계
         val lastPhase: CounselingPhase,
-        // 최소 요구 단계
-        val minimumPhase: CounselingPhase,
-        // 선택 가능한 단계 목록
         val availablePhases: String,
     )
 
@@ -535,31 +529,17 @@ class ChatSessionService(
         isFirstMessage: Boolean,
         sessionId: Long,
     ): String {
-        val messageCount = messageRepository.countBySessionId(sessionId)
-        val phaseResult = determinePhase(sessionId, messageCount)
-
-        val phaseOptions =
-            CounselingPhase.entries.joinToString("\n") { phase ->
-                "- ${phase.name}(${phase.koreanName}): ${phase.description}"
-            }
+        val phaseResult = determinePhase(sessionId)
 
         val basePrompt =
             StringBuilder().apply {
+                appendLine(AppConstants.Session.PROFESSIONAL_COUNSELING_GUIDE)
+                appendLine()
                 appendLine(counselor.basePrompt)
                 appendLine()
                 appendLine("[현재 상담 상태]")
-                appendLine("- 대화 횟수: ${messageCount}회")
                 appendLine("- 현재 단계: ${phaseResult.lastPhase.koreanName}(${phaseResult.lastPhase.name})")
-                appendLine("- 최소 요구 단계: ${phaseResult.minimumPhase.koreanName} 이상")
-                appendLine()
-                appendLine("[상담 단계 안내]")
-                appendLine(phaseOptions)
-                appendLine()
-                appendLine("[단계 선택 가이드]")
-                appendLine("- 현재 단계: ${phaseResult.lastPhase.name}")
-                appendLine("- 선택 가능: ${phaseResult.availablePhases}")
-                appendLine("- 대화 내용과 상황에 맞게 자연스럽게 선택하세요")
-                appendLine("- 이전 단계로는 돌아가지 마세요")
+                appendLine("- 선택 가능한 단계: ${phaseResult.availablePhases}")
                 appendLine()
                 appendLine("[세션 종료 안내]")
                 appendLine("상담을 자연스럽게 마무리해야 할 때:")
@@ -572,21 +552,6 @@ class ChatSessionService(
                 appendLine(
                     AppConstants.Session.PROMPT_RESPONSE_FORMAT.format(phaseResult.availablePhases),
                 )
-
-                if (!isFirstMessage) {
-                    appendLine()
-                    appendLine("예시:")
-                    appendLine("{")
-                    appendLine("  \"content\": \"그런 고민이 있으셨군요. 어떤 부분이 가장 힘드신가요?\",")
-                    val suggestedPhase =
-                        if (phaseResult.minimumPhase.ordinal > CounselingPhase.ENGAGEMENT.ordinal) {
-                            phaseResult.minimumPhase.name
-                        } else {
-                            "EXPLORATION"
-                        }
-                    appendLine("  \"phase\": \"$suggestedPhase\"")
-                    appendLine("}")
-                }
             }.toString()
 
         return if (isFirstMessage) {
