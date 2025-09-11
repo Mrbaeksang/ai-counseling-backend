@@ -27,7 +27,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
-import java.time.LocalDateTime
+import java.time.Instant
 
 @Service
 @Transactional
@@ -107,7 +107,7 @@ class ChatSessionService(
         check(session.closedAt == null) {
             AppConstants.ErrorMessages.SESSION_ALREADY_CLOSED
         }
-        session.closedAt = LocalDateTime.now()
+        session.closedAt = Instant.now()
         sessionRepository.save(session)
     }
 
@@ -397,11 +397,11 @@ class ChatSessionService(
                 parsedResponse.title.take(AppConstants.Session.TITLE_MAX_LENGTH).trim()
                     .ifEmpty { AppConstants.Session.DEFAULT_SESSION_TITLE }
         }
-        session.lastMessageAt = LocalDateTime.now()
+        session.lastMessageAt = Instant.now()
 
         // AI가 세션 종료를 요청한 경우
         if (parsedResponse.shouldEndSession) {
-            session.closedAt = LocalDateTime.now()
+            session.closedAt = Instant.now()
             logger.info("AI가 세션 종료를 요청함 - sessionId: {}", sessionId)
         }
 
@@ -434,7 +434,7 @@ class ChatSessionService(
         userMessage: Message,
     ): Pair<Message, ChatSession> {
         // 세션 업데이트
-        session.lastMessageAt = LocalDateTime.now()
+        session.lastMessageAt = Instant.now()
         if (messageRepository.countBySessionId(session.id) == 1L) {
             // 첫 메시지 에러인 경우 제목 설정
             session.title =

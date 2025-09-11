@@ -1,6 +1,6 @@
 package com.aicounseling.app.domain.session.dto
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 /**
  * 세션 목록 조회 응답 DTO
@@ -17,8 +17,8 @@ data class SessionListResponse(
     val counselorId: Long,
     val title: String,
     val counselorName: String,
-    val lastMessageAt: LocalDateTime,
+    val lastMessageAt: Instant,
     val isBookmarked: Boolean,
     val avatarUrl: String? = null,
-    val closedAt: LocalDateTime? = null,
+    val closedAt: Instant? = null,
 )

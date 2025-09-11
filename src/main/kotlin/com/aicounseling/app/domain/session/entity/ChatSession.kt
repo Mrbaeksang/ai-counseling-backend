@@ -4,7 +4,7 @@ import com.aicounseling.app.global.entity.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import java.time.LocalDateTime
+import java.time.Instant
 
 /**
  * ChatSession 엔티티 - 상담 대화 세션 (순수 데이터만)
@@ -22,7 +22,7 @@ class ChatSession(
     @Column(name = "is_bookmarked", nullable = false)
     var isBookmarked: Boolean = false,
     @Column(name = "last_message_at")
-    var lastMessageAt: LocalDateTime? = null,
+    var lastMessageAt: Instant? = null,
     @Column(name = "closed_at")
-    var closedAt: LocalDateTime? = null,
+    var closedAt: Instant? = null,
 ) : BaseEntity()
