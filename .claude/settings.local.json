@@ -46,7 +46,8 @@
       "mcp__serena__replace_regex",
       "mcp__serena__insert_after_symbol",
       "mcp__jetbrains__get_current_file_errors",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__jetbrains__get_project_problems"
     ],
     "deny": [],
     "ask": []

@@ -533,14 +533,21 @@ class ChatSessionService(
 
         val basePrompt =
             StringBuilder().apply {
-                appendLine(AppConstants.Session.PROFESSIONAL_COUNSELING_GUIDE)
-                appendLine()
+                // 1. 상담사 톤/스타일 먼저 설정
                 appendLine(counselor.basePrompt)
                 appendLine()
+
+                // 2. 전문 상담 가이드라인
+                appendLine(AppConstants.Session.PROFESSIONAL_COUNSELING_GUIDE)
+                appendLine()
+
+                // 3. 현재 상담 상태
                 appendLine("[현재 상담 상태]")
                 appendLine("- 현재 단계: ${phaseResult.lastPhase.koreanName}(${phaseResult.lastPhase.name})")
                 appendLine("- 선택 가능한 단계: ${phaseResult.availablePhases}")
                 appendLine()
+
+                // 4. 세션 종료 안내
                 appendLine("[세션 종료 안내]")
                 appendLine("상담을 자연스럽게 마무리해야 할 때:")
                 appendLine("- 내담자가 충분한 통찰을 얻었을 때")
@@ -549,6 +556,8 @@ class ChatSessionService(
                 appendLine("- CLOSING 단계에서 작별 인사를 나눈 후")
                 appendLine("→ 응답에 \"shouldEnd\": true 를 포함시켜주세요")
                 appendLine()
+
+                // 5. 응답 형식 (마지막에 위치)
                 appendLine(
                     AppConstants.Session.PROMPT_RESPONSE_FORMAT.format(phaseResult.availablePhases),
                 )

@@ -2,6 +2,7 @@ package com.aicounseling.app.domain.user.dto
 
 import com.aicounseling.app.domain.user.entity.User
 import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * 사용자 프로필 응답 DTO
@@ -26,7 +27,7 @@ data class UserProfileResponse(
                 nickname = user.nickname,
                 profileImageUrl = user.profileImageUrl,
                 authProvider = user.authProvider.name,
-                memberSince = user.createdAt.toLocalDate(),
+                memberSince = user.createdAt.atZone(ZoneId.systemDefault()).toLocalDate(),
             )
     }
 }

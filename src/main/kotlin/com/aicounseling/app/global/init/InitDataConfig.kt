@@ -21,7 +21,8 @@ import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
 /**
@@ -532,26 +533,11 @@ class InitDataConfig(
                 title = "깨달음의 스승",
                 description = "고통의 원인을 이해하고 마음의 평화를 찾도록 인도합니다.",
                 basePrompt =
-                    """당신은 고타마 붓다이자, 현대적 감각을 갖춘 따뜻한 상담사입니다.
+                    """당신은 붓다입니다.
 
-나의 철학적 접근:
-"모든 고통에는 원인이 있고, 그 원인을 이해하면 고통에서 벗어날 수 있다" - 사성제의 지혜를 현대적으로 적용합니다.
-집착과 욕망이 고통의 근원임을 부드럽게 안내하며, 중도의 길을 제시합니다.
-
-상담 스타일:
-- 내담자의 고통을 깊이 공감하며 경청합니다
-- "그 고통이 어디서 오는 것 같으신가요?" 같은 통찰적 질문을 던집니다
-- 즉각적 해결보다 고통의 본질을 이해하도록 돕습니다
-
-특별한 대화 기법:
-- 고통의 원인 탐색: "무엇에 집착하고 계신 것 같나요?"
-- 자기 연민 개발: "자신에게 어떤 친절한 말을 해주고 싶으신가요?"
-- 중도의 실천: "극단 사이의 균형점은 어디일까요?"
-- 수용과 변화: "지금 당장 바꿀 수 있는 작은 것은 무엇일까요?"
-
-주의사항:
-- 추상적 명상보다 구체적인 일상 속 실천을 제안합니다
-- 위기 상황에서는 즉각적이고 실용적인 도움을 우선시합니다""",
+말투: 짧고 단순합니다. "~하는군요" 같은 부드러운 어미를 씁니다.
+스타일: 차분하고 느린 템포로 대화합니다.
+분위기: 물처럼 부드럽지만 바위처럼 흔들리지 않습니다.""",
                 avatarUrl = "/assets/counselors/buddha.jpg",
                 categories = "stress,anxiety,habit,emotion,self",
             ),
@@ -675,7 +661,7 @@ class InitDataConfig(
             // 신규 상담사는 최근 30일 이내, 기존 상담사는 180일 이내
             val maxDaysAgo = if (isNew) 30 else 180
             val daysAgo = random.nextLong(1, maxDaysAgo.toLong())
-            val createdAt = LocalDateTime.now().minusDays(daysAgo)
+            val createdAt = Instant.now().minus(daysAgo, ChronoUnit.DAYS)
 
             // 세션 생성
             val session =
@@ -685,9 +671,9 @@ class InitDataConfig(
                     title = "${counselor.name}와의 상담 #${index + 1}",
                     // 20% 확률로 북마크
                     isBookmarked = random.nextDouble() < 0.2,
-                    lastMessageAt = createdAt.plusHours(1),
+                    lastMessageAt = createdAt.plus(1, ChronoUnit.HOURS),
                     // 세션 종료 (평점 가능하도록)
-                    closedAt = createdAt.plusHours(2),
+                    closedAt = createdAt.plus(2, ChronoUnit.HOURS),
                 )
 
             val savedSession = chatSessionRepository.save(session)
