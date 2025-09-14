@@ -385,8 +385,10 @@ class ChatSessionService(
         // userMessage 파라미터 사용 (Detekt UnusedParameter 해결)
         logger.debug("사용자 메시지 저장 - sessionId: {}, messageId: {}", sessionId, userMessage.id)
 
-        // 응답 파싱
+        // 응답 파싱 (디버깅용 로깅 추가)
+        logger.info("AI 원본 응답 - sessionId: {}, response: {}", sessionId, aiResponse.take(200))
         val parsedResponse = parseAiResponse(aiResponse, isFirstMessage)
+        logger.info("파싱된 단계 - sessionId: {}, suggestedPhase: {}", sessionId, parsedResponse.phase.name)
 
         // Phase 검증
         val phaseResult = determinePhase(sessionId, parsedResponse.phase)
@@ -489,7 +491,7 @@ class ChatSessionService(
         val availablePhases =
             CounselingPhase.entries
                 .filter { it.ordinal >= lastPhase.ordinal }
-                .joinToString(", ") { "${it.name}(${it.koreanName})" }
+                .joinToString(", ") { it.name }
 
         return PhaseResult(
             currentPhase = validPhase,
