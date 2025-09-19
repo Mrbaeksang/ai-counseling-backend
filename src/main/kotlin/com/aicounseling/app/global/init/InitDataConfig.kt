@@ -19,6 +19,7 @@ import com.aicounseling.app.global.security.AuthProvider
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
+import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -57,6 +58,7 @@ import kotlin.random.Random
  */
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
+@Profile("!test")  // 테스트 환경에서는 실행 금지
 class InitDataConfig(
     private val counselorRepository: CounselorRepository,
     private val userRepository: UserRepository,
