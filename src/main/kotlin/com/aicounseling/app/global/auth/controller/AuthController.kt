@@ -30,11 +30,6 @@ class AuthController(
         @Valid @RequestBody request: OAuthLoginRequest,
     ): RsData<AuthResponse> = handleOAuthLogin(request.token, "KAKAO", "카카오 로그인 성공")
 
-    @PostMapping("/login/naver")
-    fun loginWithNaver(
-        @Valid @RequestBody request: OAuthLoginRequest,
-    ): RsData<AuthResponse> = handleOAuthLogin(request.token, "NAVER", "네이버 로그인 성공")
-
     private fun handleOAuthLogin(
         token: String,
         provider: String,
@@ -73,7 +68,6 @@ class AuthController(
         when (provider) {
             "GOOGLE" -> "구글"
             "KAKAO" -> "카카오"
-            "NAVER" -> "네이버"
             else -> provider
         }
 

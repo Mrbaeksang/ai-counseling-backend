@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDateTime
 
 /**
@@ -87,7 +88,7 @@ class RateSessionApiTest
                         userId = testUser.id,
                         counselorId = testCounselor.id,
                         title = "평가할 세션",
-                        closedAt = LocalDateTime.now(),
+                        closedAt = Instant.now(),
                     ),
                 )
 
@@ -128,7 +129,7 @@ class RateSessionApiTest
                     ChatSession(
                         userId = testUser.id,
                         counselorId = testCounselor.id,
-                        closedAt = LocalDateTime.now(),
+                        closedAt = Instant.now(),
                     ),
                 )
 
@@ -198,7 +199,7 @@ class RateSessionApiTest
                         userId = testUser.id,
                         counselorId = testCounselor.id,
                         title = "이미 평가한 세션",
-                        closedAt = LocalDateTime.now(),
+                        closedAt = Instant.now(),
                     ),
                 )
 

@@ -5,7 +5,6 @@ import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.auth.dto.OAuthUserInfo
 import com.aicounseling.app.global.auth.service.GoogleTokenVerifier
 import com.aicounseling.app.global.auth.service.KakaoTokenVerifier
-import com.aicounseling.app.global.auth.service.NaverTokenVerifier
 import com.aicounseling.app.global.security.AuthProvider
 import com.aicounseling.app.global.security.JwtTokenProvider
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -42,9 +41,6 @@ abstract class AuthControllerBaseTest(
 
     @MockkBean(relaxed = true)
     protected lateinit var kakaoTokenVerifier: KakaoTokenVerifier
-
-    @MockkBean(relaxed = true)
-    protected lateinit var naverTokenVerifier: NaverTokenVerifier
 
     companion object {
         private val dotenv =
@@ -95,15 +91,6 @@ abstract class AuthControllerBaseTest(
             picture = "https://example.com/kakao-profile.jpg",
         )
 
-    protected val naverUserInfo =
-        OAuthUserInfo(
-            providerId = "naver-test-id-789",
-            email = "naver.test@example.com",
-            name = "네이버 테스트",
-            provider = "NAVER",
-            picture = "https://example.com/naver-profile.jpg",
-        )
-
     @BeforeEach
     fun setupTestData() {
         // Mock 설정 - Google
@@ -111,9 +98,6 @@ abstract class AuthControllerBaseTest(
 
         // Mock 설정 - Kakao
         coEvery { kakaoTokenVerifier.verifyToken(any()) } returns Mono.just(kakaoUserInfo)
-
-        // Mock 설정 - Naver
-        coEvery { naverTokenVerifier.verifyToken(any()) } returns Mono.just(naverUserInfo)
 
         // 기존 사용자 생성 (토큰 갱신 테스트용)
         existingUser =

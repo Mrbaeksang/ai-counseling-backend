@@ -108,18 +108,6 @@ class DevAuthController(
             )
         }
 
-        // Naver 사용자
-        userRepository.findByProviderIdAndAuthProvider("naver-admin-789", AuthProvider.NAVER)?.let {
-            users.add(
-                mapOf(
-                    "id" to it.id,
-                    "email" to it.email,
-                    "nickname" to it.nickname,
-                    "provider" to "NAVER",
-                ),
-            )
-        }
-
         return RsData.of(
             "S-1",
             "테스트 사용자 목록",

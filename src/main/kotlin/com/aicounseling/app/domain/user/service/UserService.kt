@@ -105,7 +105,7 @@ class UserService(
      *
      * AuthService에서 OAuth 인증 후 호출됨
      *
-     * @param provider OAuth 제공자 (GOOGLE/KAKAO/NAVER)
+     * @param provider OAuth 제공자 (GOOGLE/KAKAO)
      * @param providerId OAuth 제공자의 사용자 ID
      * @param email 사용자 이메일
      * @param nickname OAuth에서 제공한 이름

@@ -9,9 +9,9 @@ class OpenRouterService(
     private val properties: OpenRouterProperties,
 ) {
     companion object {
-        private const val DEFAULT_MAX_TOKENS = 8000  // DeepSeek v3.1 최대 출력 토큰
+        private const val DEFAULT_MAX_TOKENS = 8000 // DeepSeek v3.1 최대 출력 토큰
         private const val DEFAULT_TEMPERATURE = 0.7
-        private const val MAX_CONTEXT_TOKENS = 64000  // DeepSeek v3.1 전체 컨텍스트 윈도우
+        private const val MAX_CONTEXT_TOKENS = 64000 // DeepSeek v3.1 전체 컨텍스트 윈도우
     }
 
     suspend fun sendMessage(
@@ -61,7 +61,8 @@ class OpenRouterService(
                 model = properties.model,
                 messages = messages,
                 temperature = DEFAULT_TEMPERATURE,
-                max_tokens = null,  // 제한 없음 - 모델 최대치까지 사용
+                // 제한 없음 - 모델 최대치까지 사용
+                max_tokens = null,
             )
 
         return openRouterWebClient.post()

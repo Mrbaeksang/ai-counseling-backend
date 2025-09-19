@@ -191,8 +191,8 @@ class RefreshTokenApiTest
                     User(
                         email = "inactive@example.com",
                         nickname = "비활성유저",
-                        authProvider = AuthProvider.NAVER,
-                        providerId = "naver-inactive-id",
+                        authProvider = AuthProvider.GOOGLE,
+                        providerId = "google-inactive-id",
                     ).apply {
                         isActive = false // 비활성화
                     },

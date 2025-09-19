@@ -89,10 +89,6 @@ class OAuth2AuthenticationSuccessHandler(
                     val kakaoAccount = oauth2User.getAttribute<Map<String, Any>>("kakao_account")
                     kakaoAccount?.get("email") as? String
                 }
-                "NAVER" -> {
-                    val response = oauth2User.getAttribute<Map<String, Any>>("response")
-                    response?.get("email") as? String
-                }
                 else -> null
             }
 
@@ -100,7 +96,6 @@ class OAuth2AuthenticationSuccessHandler(
             when (provider) {
                 "GOOGLE" -> "이메일 정보를 가져올 수 없습니다"
                 "KAKAO" -> "카카오 이메일 정보를 가져올 수 없습니다"
-                "NAVER" -> "네이버 이메일 정보를 가져올 수 없습니다"
                 else -> "지원하지 않는 OAuth 제공자입니다: $provider"
             },
         )
@@ -116,10 +111,6 @@ class OAuth2AuthenticationSuccessHandler(
                 val properties = oauth2User.getAttribute<Map<String, Any>>("properties")
                 properties?.get("nickname") as? String ?: "카카오 사용자"
             }
-            "NAVER" -> {
-                val response = oauth2User.getAttribute<Map<String, Any>>("response")
-                response?.get("name") as? String ?: "네이버 사용자"
-            }
             else -> "사용자"
         }
     }
@@ -131,10 +122,6 @@ class OAuth2AuthenticationSuccessHandler(
         return when (provider) {
             "GOOGLE" -> oauth2User.getAttribute<String>("sub") ?: ""
             "KAKAO" -> oauth2User.getAttribute<String>("id") ?: ""
-            "NAVER" -> {
-                val response = oauth2User.getAttribute<Map<String, Any>>("response")
-                response?.get("id") as? String ?: ""
-            }
             else -> ""
         }
     }
@@ -148,10 +135,6 @@ class OAuth2AuthenticationSuccessHandler(
             "KAKAO" -> {
                 val properties = oauth2User.getAttribute<Map<String, Any>>("properties")
                 properties?.get("profile_image") as? String
-            }
-            "NAVER" -> {
-                val response = oauth2User.getAttribute<Map<String, Any>>("response")
-                response?.get("profile_image") as? String
             }
             else -> null
         }

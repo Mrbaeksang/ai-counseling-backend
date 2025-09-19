@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDateTime
 
 /**
@@ -75,7 +76,7 @@ class GetUserSessionsApiTest
                         userId = testUser.id,
                         counselorId = testCounselor.id,
                         title = "세션 $i",
-                        lastMessageAt = LocalDateTime.now().minusHours(i.toLong()),
+                        lastMessageAt = Instant.now().minusSeconds(i.toLong() * 3600),
                     ),
                 )
             }

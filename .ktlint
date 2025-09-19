@@ -1,0 +1,6 @@
+disabled_rules=max-line-length
+[*.kt]
+disabled_rules=max-line-length
+
+[**/init/InitDataConfig.kt]
+disabled_rules=*

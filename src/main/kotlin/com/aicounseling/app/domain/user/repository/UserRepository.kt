@@ -11,7 +11,7 @@ interface UserRepository : JpaRepository<User, Long> {
      * OAuth 로그인 시 기존 사용자 찾기
      *
      * @param providerId OAuth 제공자가 주는 고유 ID
-     * @param authProvider OAuth 제공자 (GOOGLE/KAKAO/NAVER)
+     * @param authProvider OAuth 제공자 (GOOGLE/KAKAO)
      * @return 기존 사용자 또는 null
      */
     fun findByProviderIdAndAuthProvider(
@@ -23,7 +23,7 @@ interface UserRepository : JpaRepository<User, Long> {
      * 이메일과 OAuth 제공자로 사용자 찾기
      *
      * @param email 사용자 이메일
-     * @param authProvider OAuth 제공자 (GOOGLE/KAKAO/NAVER)
+     * @param authProvider OAuth 제공자 (GOOGLE/KAKAO)
      * @return 기존 사용자 또는 null
      */
     fun findByEmailAndAuthProvider(

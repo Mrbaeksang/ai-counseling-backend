@@ -272,7 +272,7 @@ class SendMessageApiTest
                     ChatSession(
                         userId = testUser.id,
                         counselorId = testCounselor.id,
-                        closedAt = java.time.LocalDateTime.now(),
+                        closedAt = java.time.Instant.now(),
                     ),
                 )
 

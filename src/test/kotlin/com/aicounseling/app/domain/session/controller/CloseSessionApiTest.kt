@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delet
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDateTime
 
 /**
@@ -101,7 +102,7 @@ class CloseSessionApiTest
                         userId = testUser.id,
                         counselorId = testCounselor.id,
                         title = "이미 종료된 세션",
-                        closedAt = LocalDateTime.now(),
+                        closedAt = Instant.now(),
                     ),
                 )
 

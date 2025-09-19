@@ -256,6 +256,8 @@ class CounselorService(
                 review = request.feedback,
             )
 
+        println("평점 저장: 세션ID=$sessionId, 상담사=${counselor.name}, 평점=${request.rating}")
+
         counselorRatingRepository.save(rating)
 
         return RsData.of(

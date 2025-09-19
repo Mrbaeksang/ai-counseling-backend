@@ -23,6 +23,7 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDateTime
 
 /**
@@ -167,7 +168,7 @@ abstract class CounselorControllerBaseTest(
                     userId = user.id,
                     counselorId = counselor.id,
                     title = "테스트 세션",
-                    closedAt = LocalDateTime.now(),
+                    closedAt = Instant.now(),
                 ),
             )
 

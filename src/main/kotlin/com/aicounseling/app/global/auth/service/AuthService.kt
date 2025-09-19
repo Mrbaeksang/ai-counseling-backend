@@ -19,7 +19,6 @@ class AuthService(
     private val jwtTokenProvider: JwtTokenProvider,
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val kakaoTokenVerifier: KakaoTokenVerifier,
-    private val naverTokenVerifier: NaverTokenVerifier,
 ) {
     fun loginWithOAuth(
         token: String,
@@ -29,7 +28,6 @@ class AuthService(
             when (provider) {
                 "GOOGLE" -> googleTokenVerifier
                 "KAKAO" -> kakaoTokenVerifier
-                "NAVER" -> naverTokenVerifier
                 else -> throw UnauthorizedException("지원하지 않는 인증 제공자입니다")
             }
 
