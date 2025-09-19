@@ -58,7 +58,7 @@ import kotlin.random.Random
  */
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
-@Profile("!test")
+@Profile("!prod")
 class InitDataConfig(
     private val counselorRepository: CounselorRepository,
     private val userRepository: UserRepository,
