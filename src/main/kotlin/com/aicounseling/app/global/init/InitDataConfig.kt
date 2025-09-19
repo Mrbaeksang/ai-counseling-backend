@@ -84,12 +84,55 @@ class InitDataConfig(
         try {
             val counselors = createCounselors()
 
+            // Google Play 심사용 테스트 계정 생성
+            createTestUserForGooglePlay()
+
             // 프로덕션용: 상담사만 생성
             logger.info("========== 초기 데이터 생성 완료 ==========")
             logger.info("상담사: ${counselors.size}명 (깨끗한 프로덕션 데이터)")
         } catch (e: org.springframework.dao.DataAccessException) {
             logger.error("초기 데이터 생성 중 오류 발생: ${e.message}")
             // 예외를 throw하지 않고 로그만 남김
+        }
+    }
+
+    private fun createTestUserForGooglePlay() {
+        logger.info("========== Google Play 심사용 테스트 계정 생성 ==========")
+
+        // Google OAuth 테스트 계정
+        val googleTestEmail = "test.google@drmind.com"
+        val existingGoogleUser = userRepository.findByEmailAndAuthProvider(googleTestEmail, AuthProvider.GOOGLE)
+        if (existingGoogleUser == null) {
+            val googleTestUser = User(
+                email = googleTestEmail,
+                nickname = "Google Play Test (Google)",
+                authProvider = AuthProvider.GOOGLE,
+                providerId = "google-play-test-google-001",
+                profileImageUrl = null,
+                isActive = true
+            )
+            userRepository.save(googleTestUser)
+            logger.info("Google OAuth 테스트 계정 생성 완료: $googleTestEmail")
+        } else {
+            logger.info("Google OAuth 테스트 계정이 이미 존재합니다: $googleTestEmail")
+        }
+
+        // Kakao OAuth 테스트 계정
+        val kakaoTestEmail = "test.kakao@drmind.com"
+        val existingKakaoUser = userRepository.findByEmailAndAuthProvider(kakaoTestEmail, AuthProvider.KAKAO)
+        if (existingKakaoUser == null) {
+            val kakaoTestUser = User(
+                email = kakaoTestEmail,
+                nickname = "Google Play Test (Kakao)",
+                authProvider = AuthProvider.KAKAO,
+                providerId = "google-play-test-kakao-001",
+                profileImageUrl = null,
+                isActive = true
+            )
+            userRepository.save(kakaoTestUser)
+            logger.info("Kakao OAuth 테스트 계정 생성 완료: $kakaoTestEmail")
+        } else {
+            logger.info("Kakao OAuth 테스트 계정이 이미 존재합니다: $kakaoTestEmail")
         }
     }
 
