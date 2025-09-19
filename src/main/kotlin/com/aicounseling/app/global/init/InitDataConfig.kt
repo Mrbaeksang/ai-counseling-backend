@@ -80,10 +80,21 @@ class InitDataConfig(
 
         try {
             val counselors = createCounselors()
-            // 프로덕션용: 상담사만 생성, 테스트 데이터는 생성하지 않음
 
-            logger.info("========== 초기 데이터 생성 완료 ==========")
-            logger.info("상담사: ${counselors.size}명 (깨끗한 프로덕션 데이터)")
+            // 테스트 환경에서는 테스트 데이터도 생성
+            if (environment.activeProfiles.contains("test")) {
+                val users = createTestUsers()
+                val sessions = createTestSessions(users, counselors)
+                val ratings = createTestRatings(users, counselors, sessions)
+                val favorites = createTestFavorites(users, counselors)
+
+                logger.info("========== 테스트 데이터 생성 완료 ==========")
+                logger.info("상담사: ${counselors.size}명, 사용자: ${users.size}명, 세션: ${sessions.size}개, 평가: ${ratings.size}개, 즐겨찾기: ${favorites.size}개")
+            } else {
+                // 프로덕션용: 상담사만 생성
+                logger.info("========== 초기 데이터 생성 완료 ==========")
+                logger.info("상담사: ${counselors.size}명 (깨끗한 프로덕션 데이터)")
+            }
         } catch (e: org.springframework.dao.DataAccessException) {
             logger.error("초기 데이터 생성 중 오류 발생: ${e.message}")
             // 예외를 throw하지 않고 로그만 남김
