@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -30,10 +31,19 @@ import java.time.LocalDateTime
  * CounselorController 테스트 기본 클래스
  * 공통 설정과 헬퍼 메서드 제공
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = [
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.profiles.active=test"
+    ]
+)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@TestPropertySource(properties = [
+    "init-data.enabled=false"
+])
 abstract class CounselorControllerBaseTest(
     protected val mockMvc: MockMvc,
     protected val objectMapper: ObjectMapper,
