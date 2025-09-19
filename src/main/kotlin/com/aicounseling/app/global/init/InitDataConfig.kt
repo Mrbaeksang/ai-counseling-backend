@@ -19,7 +19,6 @@ import com.aicounseling.app.global.security.AuthProvider
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -58,7 +57,6 @@ import kotlin.random.Random
  */
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
-@Profile("test", "local", "default") // 테스트와 로컬 환경에서만 실행
 class InitDataConfig(
     private val counselorRepository: CounselorRepository,
     private val userRepository: UserRepository,
@@ -72,6 +70,12 @@ class InitDataConfig(
 
     @Transactional
     override fun run(args: ApplicationArguments?) {
+        // 프로덕션 환경에서는 실행하지 않음
+        if (environment.activeProfiles.contains("prod")) {
+            logger.info("프로덕션 환경에서는 초기 데이터를 생성하지 않습니다.")
+            return
+        }
+
         logger.info("========== 초기 데이터 생성 시작 ==========")
 
         // 이미 데이터가 있는지 확인
