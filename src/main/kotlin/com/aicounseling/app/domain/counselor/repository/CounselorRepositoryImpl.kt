@@ -73,7 +73,7 @@ class CounselorRepositoryImpl(
                 "rating" -> counselorStats.sortedByDescending { it.averageRating }
                 "popular" -> counselorStats.sortedByDescending { it.totalSessions }
                 "recent" -> counselorStats.sortedByDescending { it.counselor.createdAt }
-                else -> counselorStats.sortedByDescending { it.totalSessions } // 기본값: 인기순
+                else -> counselorStats.sortedByDescending { it.counselor.createdAt } // 기본값: 최신순 (생성일 내림차순)
             }
 
         // 4단계: 페이징 처리

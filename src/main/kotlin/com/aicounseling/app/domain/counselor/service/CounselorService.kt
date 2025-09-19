@@ -45,7 +45,7 @@ class CounselorService(
     ): RsData<PagedResponse<CounselorListResponse>> {
         // 정렬 옵션 검증 (popular, rating, recent)
         val validSorts = listOf("popular", "rating", "recent")
-        val finalSort: String = if (!sort.isNullOrEmpty() && sort in validSorts) sort else "popular"
+        val finalSort: String = if (!sort.isNullOrEmpty() && sort in validSorts) sort else "recent"
 
         val counselors = counselorRepository.findCounselorsWithStats(finalSort, pageable)
 

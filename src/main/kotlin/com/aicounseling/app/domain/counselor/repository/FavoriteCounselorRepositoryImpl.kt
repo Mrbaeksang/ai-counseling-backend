@@ -56,8 +56,10 @@ class FavoriteCounselorRepositoryImpl(
                     path(Counselor::name),
                     path(Counselor::title),
                     path(Counselor::avatarUrl),
+                    path(Counselor::createdAt),
                     path(FavoriteCounselor::createdAt),
                 ).orderBy(
+                    path(Counselor::createdAt).desc(),
                     path(FavoriteCounselor::createdAt).desc(),
                 )
             }
@@ -70,9 +72,8 @@ class FavoriteCounselorRepositoryImpl(
                 name = temp.name,
                 title = temp.title,
                 avatarUrl = temp.avatarUrl,
-                // 평점을 Int로 변환 (소수점 첫째 자리까지 표현)
-                // 예: 4.3 → 43 (UI에서 4.3으로 표시)
-                averageRating = (temp.averageRating * 10).roundToInt(),
+                // 즐겨찾기 목록은 1~10 스케일을 그대로 사용
+                averageRating = temp.averageRating.roundToInt(),
             )
         }
     }

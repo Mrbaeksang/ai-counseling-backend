@@ -25,7 +25,7 @@ class CounselorController(
 ) {
     @GetMapping
     fun getCounselors(
-        @RequestParam(defaultValue = "popular") sort: String,
+        @RequestParam(defaultValue = "recent") sort: String,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): RsData<PagedResponse<CounselorListResponse>> {
