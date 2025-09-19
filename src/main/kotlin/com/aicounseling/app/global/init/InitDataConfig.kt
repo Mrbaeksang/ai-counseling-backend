@@ -70,12 +70,6 @@ class InitDataConfig(
 
     @Transactional
     override fun run(args: ApplicationArguments?) {
-        // 프로덕션 환경에서는 실행하지 않음
-        if (environment.activeProfiles.contains("prod")) {
-            logger.info("프로덕션 환경에서는 초기 데이터를 생성하지 않습니다.")
-            return
-        }
-
         logger.info("========== 초기 데이터 생성 시작 ==========")
 
         // 이미 데이터가 있는지 확인
