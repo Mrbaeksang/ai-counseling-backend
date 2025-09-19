@@ -77,6 +77,12 @@ abstract class CounselorControllerBaseTest(
 
     @BeforeEach
     fun setupTestData() {
+        // 기존 InitDataConfig 데이터 정리
+        counselorRatingRepository.deleteAll()
+        favoriteCounselorRepository.deleteAll()
+        sessionRepository.deleteAll()
+        counselorRepository.deleteAll()
+        userRepository.deleteAll()
         // 테스트 사용자 생성
         testUser =
             userRepository.save(
