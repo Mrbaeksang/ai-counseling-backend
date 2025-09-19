@@ -60,8 +60,6 @@ import kotlin.random.Random
  */
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
-@Profile("!test")  // 테스트 환경에서는 실행 금지
-@ConditionalOnProperty(name = ["init-data.enabled"], havingValue = "true", matchIfMissing = true)
 class InitDataConfig(
     private val counselorRepository: CounselorRepository,
     private val userRepository: UserRepository,
