@@ -58,7 +58,7 @@ import kotlin.random.Random
  */
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
-@Profile("!prod")
+@Profile("test", "local", "default") // 테스트와 로컬 환경에서만 실행
 class InitDataConfig(
     private val counselorRepository: CounselorRepository,
     private val userRepository: UserRepository,
