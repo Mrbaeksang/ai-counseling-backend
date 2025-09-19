@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -57,7 +58,7 @@ import kotlin.random.Random
  */
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
-@Profile("dev", "local")
+@Profile("!test")
 class InitDataConfig(
     private val counselorRepository: CounselorRepository,
     private val userRepository: UserRepository,
@@ -65,6 +66,7 @@ class InitDataConfig(
     private val messageRepository: MessageRepository,
     private val counselorRatingRepository: CounselorRatingRepository,
     private val favoriteCounselorRepository: FavoriteCounselorRepository,
+    private val environment: Environment,
 ) : ApplicationRunner {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -81,20 +83,9 @@ class InitDataConfig(
         try {
             val counselors = createCounselors()
 
-            // 테스트 환경에서는 테스트 데이터도 생성
-            if (environment.activeProfiles.contains("test")) {
-                val users = createTestUsers()
-                val sessions = createTestSessions(users, counselors)
-                val ratings = createTestRatings(users, counselors, sessions)
-                val favorites = createTestFavorites(users, counselors)
-
-                logger.info("========== 테스트 데이터 생성 완료 ==========")
-                logger.info("상담사: ${counselors.size}명, 사용자: ${users.size}명, 세션: ${sessions.size}개, 평가: ${ratings.size}개, 즐겨찾기: ${favorites.size}개")
-            } else {
-                // 프로덕션용: 상담사만 생성
-                logger.info("========== 초기 데이터 생성 완료 ==========")
-                logger.info("상담사: ${counselors.size}명 (깨끗한 프로덕션 데이터)")
-            }
+            // 프로덕션용: 상담사만 생성
+            logger.info("========== 초기 데이터 생성 완료 ==========")
+            logger.info("상담사: ${counselors.size}명 (깨끗한 프로덕션 데이터)")
         } catch (e: org.springframework.dao.DataAccessException) {
             logger.error("초기 데이터 생성 중 오류 발생: ${e.message}")
             // 예외를 throw하지 않고 로그만 남김
