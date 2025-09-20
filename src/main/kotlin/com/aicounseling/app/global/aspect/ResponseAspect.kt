@@ -42,14 +42,14 @@ class ResponseAspect {
             "execution(* com.aicounseling.app..*Controller.*(..)) && " +
             "!execution(* com.aicounseling.app.global.auth.controller.DevAuthController.*(..))",
     )
-    fun handleResponse(joinPoint: ProceedingJoinPoint): Any? {
+    fun handleResponse(joinPoint: ProceedingJoinPoint): Any {
         val result = joinPoint.proceed()
 
         return when (result) {
             is RsData<*> -> {
                 val httpStatus = getHttpStatusFromCode(result.resultCode)
                 setResponseStatus(httpStatus)
-                ResponseEntity.status(httpStatus).body(result)
+                result
             }
             is ResponseEntity<*> -> result
             else -> result
