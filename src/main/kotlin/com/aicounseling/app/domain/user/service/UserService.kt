@@ -5,6 +5,9 @@ import com.aicounseling.app.domain.user.entity.User
 import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.constants.AppConstants
 import com.aicounseling.app.global.security.AuthProvider
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -32,6 +35,7 @@ class UserService(
      * @return 사용자 엔티티
      * @throws NoSuchElementException 사용자를 찾을 수 없을 때
      */
+    @Cacheable(cacheNames = ["user"], key = "#userId")
     fun getUser(userId: Long): User {
         return userRepository.findById(userId).orElseThrow {
             NoSuchElementException("${AppConstants.ErrorMessages.USER_NOT_FOUND}: $userId")
@@ -60,6 +64,7 @@ class UserService(
      * @throws NoSuchElementException 사용자를 찾을 수 없을 때
      */
     @Transactional
+    @CacheEvict(cacheNames = ["user"], key = "#userId")
     fun updateNickname(
         userId: Long,
         newNickname: String,
@@ -91,6 +96,7 @@ class UserService(
      * @throws NoSuchElementException 사용자를 찾을 수 없을 때
      */
     @Transactional
+    @CacheEvict(cacheNames = ["user"], key = "#userId")
     fun deleteUser(userId: Long) {
         if (!userRepository.existsById(userId)) {
             throw NoSuchElementException("${AppConstants.ErrorMessages.USER_NOT_FOUND}: $userId")
@@ -113,6 +119,7 @@ class UserService(
      * @return 찾거나 생성된 사용자 엔티티
      */
     @Transactional
+    @CachePut(cacheNames = ["user"], key = "#result.id")
     fun findOrCreateOAuthUser(
         provider: AuthProvider,
         providerId: String,
