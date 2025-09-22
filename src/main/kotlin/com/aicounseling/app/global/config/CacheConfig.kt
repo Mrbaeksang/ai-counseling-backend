@@ -1,5 +1,6 @@
 package com.aicounseling.app.global.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -22,6 +23,7 @@ import java.time.Duration
 @ConditionalOnProperty(value = ["redis.enabled"], havingValue = "true", matchIfMissing = true)
 class CacheConfig(
     @Value("\${REDIS_URL:}") private val redisUrl: String,
+    private val objectMapper: ObjectMapper,
 ) {
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
@@ -42,19 +44,20 @@ class CacheConfig(
 
     @Bean
     fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
+        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
         return RedisTemplate<String, Any>().apply {
             this.connectionFactory = connectionFactory
             keySerializer = StringRedisSerializer()
-            valueSerializer = GenericJackson2JsonRedisSerializer()
+            valueSerializer = serializer
             hashKeySerializer = StringRedisSerializer()
-            hashValueSerializer = GenericJackson2JsonRedisSerializer()
+            hashValueSerializer = serializer
             afterPropertiesSet()
         }
     }
 
     @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory): CacheManager {
-        val serializer = GenericJackson2JsonRedisSerializer()
+        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
         val defaultConfig =
             RedisCacheConfiguration
                 .defaultCacheConfig()
