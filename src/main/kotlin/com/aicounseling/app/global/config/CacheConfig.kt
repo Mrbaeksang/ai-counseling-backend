@@ -2,6 +2,7 @@ package com.aicounseling.app.global.config
 
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,6 +19,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer
 import java.time.Duration
 
 @Configuration
+@ConditionalOnProperty(value = ["redis.enabled"], havingValue = "true", matchIfMissing = true)
 class CacheConfig(
     @Value("\${REDIS_URL:}") private val redisUrl: String,
 ) {

@@ -17,6 +17,14 @@ spring:
   h2:
     console:
       enabled: false
+
+  cache:
+    type: none
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
       
 # 테스트용 외부 서비스 설정
 openrouter:
