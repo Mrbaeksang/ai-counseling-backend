@@ -17,26 +17,24 @@ class AuthService(
     // UserRepository 대신 UserService 주입
     private val userService: UserService,
     private val jwtTokenProvider: JwtTokenProvider,
-    private val googleTokenVerifier: GoogleTokenVerifier,
-    private val kakaoTokenVerifier: KakaoTokenVerifier,
+    private val oauthTokenCacheService: OAuthTokenCacheService,
 ) {
     fun loginWithOAuth(
         token: String,
         provider: String,
     ): Mono<AuthResponse> {
-        val verifier =
+        val userInfoMono =
             when (provider) {
-                "GOOGLE" -> googleTokenVerifier
-                "KAKAO" -> kakaoTokenVerifier
-                else -> throw UnauthorizedException("지원하지 않는 인증 제공자입니다")
+                "GOOGLE" -> Mono.fromCallable { oauthTokenCacheService.getGoogleUserInfo(token) }
+                "KAKAO" -> Mono.fromCallable { oauthTokenCacheService.getKakaoUserInfo(token) }
+                else -> Mono.error(UnauthorizedException("지원하지 않는 인증 제공자입니다"))
             }
 
-        return verifier.verifyToken(token)
-            .map { oauthInfo ->
-                val authProvider = AuthProvider.valueOf(provider)
-                val user = findOrCreateUser(oauthInfo, authProvider)
-                createAuthResponse(user)
-            }
+        return userInfoMono.map { oauthInfo ->
+            val authProvider = AuthProvider.valueOf(provider)
+            val user = findOrCreateUser(oauthInfo, authProvider)
+            createAuthResponse(user)
+        }
     }
 
     @Suppress("SwallowedException")

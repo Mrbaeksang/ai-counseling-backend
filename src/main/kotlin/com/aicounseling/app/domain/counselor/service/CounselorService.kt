@@ -14,6 +14,8 @@ import com.aicounseling.app.domain.session.entity.ChatSession
 import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.pagination.PagedResponse
 import com.aicounseling.app.global.rsData.RsData
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,6 +35,7 @@ class CounselorService(
     private val favoriteCounselorRepository: FavoriteCounselorRepository,
     private val counselorRatingRepository: CounselorRatingRepository,
     private val userRepository: UserRepository,
+    private val counselorCacheService: CounselorCacheService,
 ) {
     /**
      * 상담사 목록 조회
@@ -47,24 +50,24 @@ class CounselorService(
         val validSorts = listOf("popular", "rating", "recent")
         val finalSort: String = if (!sort.isNullOrEmpty() && sort in validSorts) sort else "recent"
 
-        val counselors = counselorRepository.findCounselorsWithStats(finalSort, pageable)
+        val baseResponse = counselorCacheService.getCounselorPage(finalSort, pageable)
 
-        val counselorsWithFavorite =
+        val response =
             if (userId != null) {
-                counselors.map { counselor ->
-                    val isFavorite = favoriteCounselorRepository.existsByUserIdAndCounselorId(userId, counselor.id)
-                    counselor.copy(isFavorite = isFavorite)
-                }
+                val favorites =
+                    baseResponse.content.map { counselor ->
+                        val isFavorite = favoriteCounselorRepository.existsByUserIdAndCounselorId(userId, counselor.id)
+                        counselor.copy(isFavorite = isFavorite)
+                    }
+                baseResponse.copy(content = favorites)
             } else {
-                counselors
+                baseResponse
             }
-
-        val pagedResponse = PagedResponse.from(counselorsWithFavorite)
 
         return RsData.of(
             "S-1",
             "상담사 목록 조회 성공",
-            pagedResponse,
+            response,
         )
     }
 
@@ -77,7 +80,7 @@ class CounselorService(
         userId: Long?,
     ): RsData<CounselorDetailResponse> {
         val counselor =
-            counselorRepository.findCounselorDetailById(counselorId)
+            counselorCacheService.getCounselorDetail(counselorId)
                 ?: return RsData.of(
                     "F-404",
                     "상담사를 찾을 수 없습니다",
@@ -224,6 +227,12 @@ class CounselorService(
      * @return 평가 결과
      */
     @Transactional
+    @Caching(
+        evict = [
+            CacheEvict(cacheNames = ["counselor:list"], allEntries = true),
+            CacheEvict(cacheNames = ["counselor:detail"], key = "#counselorId"),
+        ],
+    )
     fun addRating(
         sessionId: Long,
         userId: Long,

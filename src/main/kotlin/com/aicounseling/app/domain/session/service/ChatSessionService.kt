@@ -21,8 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,6 +38,7 @@ class ChatSessionService(
     private val messageRepository: MessageRepository,
     private val openRouterService: OpenRouterService,
     private val objectMapper: ObjectMapper,
+    private val chatSessionCacheService: ChatSessionCacheService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(ChatSessionService::class.java)
@@ -58,7 +60,7 @@ class ChatSessionService(
     ): Page<SessionListResponse> {
         // Custom Repository 메서드를 사용하여 N+1 문제 해결
         // 한 번의 쿼리로 Session과 Counselor 정보를 함께 조회
-        return sessionRepository.findSessionsWithCounselor(userId, bookmarked, isClosed, pageable)
+        return chatSessionCacheService.getUserSessions(userId, bookmarked, isClosed, pageable)
     }
 
     /**
@@ -66,6 +68,7 @@ class ChatSessionService(
      * @param counselorId 상담사 ID
      * @return 생성된 세션 응답 DTO
      */
+    @CacheEvict(cacheNames = ["user-sessions"], allEntries = true)
     fun startSession(
         userId: Long,
         counselorId: Long,
@@ -99,6 +102,12 @@ class ChatSessionService(
      * @throws IllegalStateException 이미 종료된 세션인 경우
      */
     @Transactional
+    @Caching(
+        evict = [
+            CacheEvict(cacheNames = ["user-sessions"], allEntries = true),
+            CacheEvict(cacheNames = ["session-messages"], allEntries = true),
+        ],
+    )
     fun closeSession(
         userId: Long,
         sessionId: Long,
@@ -153,6 +162,7 @@ class ChatSessionService(
      * @throws IllegalArgumentException 세션을 찾을 수 없는 경우
      */
     @Transactional
+    @CacheEvict(cacheNames = ["user-sessions"], allEntries = true)
     fun toggleBookmark(
         userId: Long,
         sessionId: Long,
@@ -186,6 +196,12 @@ class ChatSessionService(
      * @throws IllegalArgumentException 세션을 찾을 수 없는 경우
      */
     @Transactional
+    @Caching(
+        evict = [
+            CacheEvict(cacheNames = ["user-sessions"], allEntries = true),
+            CacheEvict(cacheNames = ["session-messages"], allEntries = true),
+        ],
+    )
     fun updateSessionTitle(
         userId: Long,
         sessionId: Long,
@@ -210,15 +226,7 @@ class ChatSessionService(
         pageable: Pageable,
     ): Page<MessageItem> {
         getSession(sessionId, userId) // 권한 확인용
-        val messages = messageRepository.findBySessionId(sessionId, pageable)
-        val content =
-            messages.content.map { message ->
-                MessageItem(
-                    content = message.content,
-                    senderType = message.senderType.name,
-                )
-            }
-        return PageImpl(content, messages.pageable, messages.totalElements)
+        return chatSessionCacheService.getSessionMessages(sessionId, pageable)
     }
 
     /**
@@ -231,6 +239,12 @@ class ChatSessionService(
      * @throws IllegalStateException 이미 종료된 세션인 경우
      */
     @Transactional
+    @Caching(
+        evict = [
+            CacheEvict(cacheNames = ["user-sessions"], allEntries = true),
+            CacheEvict(cacheNames = ["session-messages"], allEntries = true),
+        ],
+    )
     fun sendMessage(
         userId: Long,
         sessionId: Long,
