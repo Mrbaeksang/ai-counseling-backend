@@ -1,419 +1,160 @@
 # 시스템 아키텍처
 
-## 1. 아키텍처 개요
-
+## 1. 전체 구성
 ```mermaid
 graph TB
-    subgraph "Client Layer"
-        AND[Android App]
+    subgraph Client Layer
+        APP[Mobile App\n(Expo / React Native)]
     end
-    
-    subgraph "Backend Server"
-        subgraph "Domain Layer"
+
+    subgraph Backend Layer
+        subgraph Domain
             USER[User Domain]
             COUN[Counselor Domain]
             SESS[Session Domain]
         end
-        
-        subgraph "Global Layer"
-            SEC[Security/OAuth]
-            CONF[Config]
-            OR[OpenRouter Client]
-            EXC[Exception Handler]
+        subgraph Global
+            AUTH[Auth & Security]
+            AI[OpenRouter Integration]
+            INIT[Config & Init]
+            ERR[Exception / RsData]
         end
+        DB[(PostgreSQL 15\nH2 (test))]
     end
-    
-    subgraph "External Services"
-        OAI[OpenRouter API]
-        OAUTH[OAuth Providers<br/>Google/Kakao/Naver]
+
+    subgraph External Services
+        GOOGLE[(Google OAuth)]
+        KAKAO[(Kakao OAuth)]
+        OPENROUTER[(OpenRouter API)]
     end
-    
-    subgraph "Data Layer"
-        PG[(PostgreSQL)]
-    end
-    
-    AND --> USER
-    AND --> COUN
-    AND --> SESS
-    
-    USER --> SEC
-    COUN --> OR
-    SESS --> OR
-    
-    OR --> OAI
-    SEC --> OAUTH
-    
-    USER --> PG
-    COUN --> PG
-    SESS --> PG
+
+    APP --> USER
+    APP --> COUN
+    APP --> SESS
+
+    AUTH --> GOOGLE
+    AUTH --> KAKAO
+    AI --> OPENROUTER
+
+    USER --> DB
+    COUN --> DB
+    SESS --> DB
 ```
 
-## 2. DDD(Domain-Driven Design) 패키지 구조
+- 클라이언트는 Expo/React Native 앱으로 OAuth 로그인과 상담 UX를 제공한다.
+- 백엔드는 Domain(사용자·상담사·세션)과 Global(인증, 공통 설정, AI 연동) 레이어로 구성된다.
+- 외부 서비스는 Google/Kakao OAuth 및 OpenRouter Chat API만 사용한다.
 
-```
-com.aicounseling.app/
-├── domain/                    # 비즈니스 도메인
-│   ├── user/                 # 사용자 도메인
-│   │   ├── entity/
-│   │   │   └── User.kt
-│   │   ├── service/
-│   │   │   └── UserService.kt
-│   │   ├── repository/
-│   │   │   └── UserRepository.kt
-│   │   ├── controller/
-│   │   │   └── UserController.kt
-│   │   └── dto/
-│   │
-│   ├── counselor/           # 상담사 도메인
-│   │   ├── entity/
-│   │   │   ├── Counselor.kt
-│   │   │   ├── CounselorRating.kt
-│   │   │   └── FavoriteCounselor.kt
-│   │   ├── service/
-│   │   ├── repository/
-│   │   ├── controller/
-│   │   └── dto/
-│   │
-│   └── session/            # 세션 도메인
-│       ├── entity/
-│       │   ├── ChatSession.kt
-│       │   ├── Message.kt
-│       │   └── CounselingPhase.kt
-│       ├── service/
-│       ├── repository/
-│       ├── controller/
-│       └── dto/
-│
-└── global/                  # 공통 관심사
-    ├── auth/               # OAuth 인증
-    │   ├── controller/
-    │   │   └── AuthController.kt
-    │   ├── service/
-    │   │   ├── AuthService.kt
-    │   │   └── OAuthTokenVerifier.kt
-    │   └── dto/
-    ├── config/             # Spring 설정
-    ├── security/           # JWT, 필터
-    ├── exception/          # 전역 예외 처리
-    ├── openrouter/         # OpenRouter API
-    ├── entity/             # BaseEntity
-    ├── rsData/             # 응답 포맷
-    ├── rq/                 # Request Context
-    ├── aspect/             # AOP
-    ├── pagination/         # 페이지네이션
-    └── constants/          # 상수
+## 2. 레이어 및 패키지 구조
+
+### 2.1 Domain Layer
+- `domain.user`: 프로필 조회, 닉네임 변경, 회원 탈퇴 로직을 제공한다.
+- `domain.counselor`: 상담사 목록·상세·즐겨찾기·평가를 담당하고 Kotlin JDSL로 통계 쿼리를 수행한다.
+- `domain.session`: 세션 생성/종료, 메시지 기록, 북마크·제목·평가 처리와 AI 연동을 맡는다.
+
+### 2.2 Global Layer
+- `global.auth`: `AuthController`, `AuthService`, Google/Kakao 토큰 검증기, `JwtTokenProvider`를 포함한다.
+- `global.security`: JWT 필터, Spring Security 설정, CORS 정책을 정의한다.
+- `global.openrouter`: WebClient 설정(`OpenRouterConfig`)과 AI 호출(`OpenRouterService`).
+- `global.pagination`, `global.rsData`, `global.constants`, `global.aspect`(prod 전용 ResponseAspect), `global.rq` 등 공통 유틸을 제공한다.
+- `global.init`: `InitDataConfig`가 초기 상담사/테스트 데이터를 시드한다.
+
+### 2.3 공통 설정 및 라이브러리
+- Spring Boot 3.5.4, JPA + Kotlin JDSL, WebFlux WebClient, Kotlin Coroutines를 사용한다.
+- `PageUtils`와 `PagedResponse`가 일관된 페이지 응답을 만든다.
+- ktlint, detekt를 통해 코딩 규칙과 정적 분석을 enforcing 한다.
+
+#### 패키지 트리
+```text
+com.aicounseling.app
+├── domain/
+│   ├── counselor/{controller,dto,entity,repository,service}
+│   ├── session/{controller,dto,entity,repository,service}
+│   └── user/{controller,dto,entity,repository,service}
+├── global/
+│   ├── auth/{controller,dto,service}
+│   ├── config/, security/, constants/, pagination/, rsData/
+│   ├── openrouter/{OpenRouterConfig.kt, OpenRouterService.kt}
+│   ├── init/InitDataConfig.kt
+│   └── aspect/ResponseAspect.kt (prod 전용)
+└── AiCounselingApplication.kt
 ```
 
 ## 3. 핵심 컴포넌트
 
-### 3.1 Domain Entities
-- **User**: OAuth 사용자 정보 (BaseEntity 상속)
-- **Counselor**: AI 상담사 정보 + base_prompt
-- **ChatSession**: 상담 세션 (제목, 북마크)
-- **Message**: 개별 메시지 + 상담 단계
-- **CounselorRating**: 세션 평가 (1-10점)
-- **FavoriteCounselor**: 즐겨찾기 매핑
+### 3.1 인증/보안
+- `AuthController`가 `/api/auth/login/{provider}`와 `/api/auth/refresh` 엔드포인트를 노출한다.
+- `AuthService`는 Google/Kakao 토큰을 검증하고 `JwtTokenProvider`로 Access/Refresh 토큰을 발급한다.
+- `SecurityConfig`는 JWT 필터, CORS, 비로그인 허용 경로(`/api/auth/**`, `/swagger-ui/**` 등)를 정의한다.
 
-### 3.2 Service Layer
-```kotlin
-// UserService - OAuth 로그인 처리
-@Service
-@Transactional
-class UserService(
-    private val userRepository: UserRepository
-) {
-    fun processOAuthLogin(
-        email: String, 
-        nickname: String, 
-        provider: AuthProvider
-    ): User {
-        // 기존 사용자 확인 또는 신규 생성
-        return userRepository.findByEmailAndAuthProvider(email, provider)
-            ?: createNewUser(email, nickname, provider)
-    }
-}
+### 3.2 세션 & AI
+- `ChatSessionService`는 세션 생성·종료, 메시지 저장, 상담 단계 결정, AI 응답 파싱을 담당한다.
+- `OpenRouterService`는 WebClient로 `openrouter/sonoma-sky-alpha`(기본) 모델을 호출하고 60초 타임아웃·3회 재시도를 적용한다.
+- `AppConstants.Session`은 상담 단계 임계치, 기본 제목, 시스템 프롬프트 템플릿을 관리한다.
 
-// CounselorService - 상담사 관리
-@Service
-class CounselorService(
-    private val counselorRepository: CounselorRepository,
-    private val sessionRepository: ChatSessionRepository
-) {
-    fun findActiveCounselors(): List<Counselor> {
-        return counselorRepository.findByIsActiveTrue()
-    }
-    
-    fun getCounselorWithStats(id: Long): Counselor {
-        val counselor = counselorRepository.findById(id)
-        counselor.totalSessions = sessionRepository.countByCounselorId(id)
-        return counselor
-    }
-}
-```
+### 3.3 데이터 접근
+- JPA와 Kotlin JDSL을 사용해 통계 및 정렬 쿼리를 구현한다 (`CounselorRepository.findCounselorsWithStats` 등).
+- 모든 엔티티는 `BaseEntity`를 상속해 `id`, `createdAt`, `updatedAt`을 공통 관리한다.
+- `PagedResponse`는 Spring `Page` 결과를 content + pageInfo 형태로 직렬화한다.
 
-### 3.3 OpenRouter Integration
-```kotlin
-@Service
-class OpenRouterService(
-    private val webClient: WebClient,
-    private val properties: OpenRouterProperties
-) {
-    suspend fun sendCounselingMessage(
-        userMessage: String,
-        counselorPrompt: String,
-        conversationHistory: List<Message>
-    ): String {
-        val request = ChatRequest(
-            model = "meta-llama/llama-3.2-3b-instruct",
-            messages = buildMessages(counselorPrompt, conversationHistory, userMessage),
-            temperature = 0.7,
-            max_tokens = 2000
-        )
-        
-        return webClient.post()
-            .uri("/chat/completions")
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(ChatResponse::class.java)
-            .map { it.choices.first().message.content }
-            .awaitSingle()
-    }
-}
-```
+## 4. 요청 흐름
 
-## 4. 데이터 흐름
-
-### 4.1 OAuth 로그인 플로우 (Android SDK 방식)
+### 4.1 OAuth 로그인
 ```mermaid
 sequenceDiagram
-    participant App as Android App
-    participant OAuth as OAuth SDK
-    participant API as Spring Boot
-    participant Provider as OAuth Provider
-    participant DB as PostgreSQL
-    
-    App->>OAuth: SDK 로그인 호출
-    OAuth->>Provider: 인증 요청
-    Provider-->>OAuth: Access Token
-    OAuth-->>App: OAuth Token
-    App->>API: POST /api/auth/login/{provider}
-    Note over App,API: Body: {token: "..."}
-    API->>Provider: 토큰 검증 API 호출
-    Provider-->>API: 사용자 정보
-    API->>DB: 사용자 조회/생성
-    API-->>App: JWT 토큰
-    Note over App: JWT로 이후 API 호출
+    participant App as Mobile App
+    participant API as AuthController
+    participant Verifier as Google/Kakao Verifier
+    participant Repo as UserRepository
+    App->>API: POST /api/auth/login/{provider}\n{ token }
+    API->>Verifier: verifyToken(token)
+    Verifier-->>API: OAuthUserInfo
+    API->>Repo: findOrCreateOAuthUser()
+    Repo-->>API: User
+    API-->>App: RsData<AuthResponse>\n(S-1, accessToken, refreshToken)
 ```
 
 ### 4.2 상담 메시지 처리
 ```mermaid
 sequenceDiagram
-    participant App as Android App
-    participant API as Spring Boot
-    participant OR as OpenRouter
+    participant App as Mobile App
+    participant Sess as ChatSessionController
+    participant Service as ChatSessionService
+    participant OR as OpenRouterService
     participant DB as PostgreSQL
-    
-    App->>API: POST /api/chat/message
-    API->>DB: 세션 조회
-    API->>OR: AI 응답 요청
-    Note over OR: GPT-OSS-20B 모델
-    OR-->>API: AI 응답
-    API->>DB: 메시지 저장
-    API-->>App: 응답 메시지
+    App->>Sess: POST /api/sessions/{id}/messages\n{ content }
+    Sess->>Service: sendMessage(userId, sessionId, content)
+    Service->>DB: save user Message
+    Service->>OR: sendCounselingMessage()
+    OR-->>Service: AI JSON 응답
+    Service->>DB: save ai Message + update session title
+    Service-->>Sess: SendMessageResponse
+    Sess-->>App: RsData(S-1, aiMessage, sessionTitle?)
 ```
 
-## 5. 상담 단계 (AI 자동 판단)
+## 5. 데이터 흐름 및 저장소
+- 사용자 한 명은 여러 세션을 가질 수 있으며, 세션마다 다수 메시지를 가진다.
+- 즐겨찾기(`favorite_counselors`)와 평점(`counselor_ratings`)은 사용자-상담사 관계를 위한 별도 테이블이다.
+- `lastMessageAt`는 메시지 저장 시 업데이트되어 세션 목록 정렬에 사용된다.
+- 평가 데이터는 세션당 1회만 허용하며, 중복 요청은 서비스 레벨에서 차단된다.
 
-### 5.1 단계 정의
-```kotlin
-enum class CounselingPhase(
-    val koreanName: String,
-    val description: String
-) {
-    ENGAGEMENT(      // 관계 형성 - 신뢰 구축
-        "관계 형성",
-        "첨 인사, 관계 형성, 목표 설정 중일 때"
-    ),
-    EXPLORATION(     // 문제 탐색 - 구체적 경험
-        "문제 탐색",
-        "문제 상황, 감정, 구체적 경험을 탐색할 때"
-    ),
-    INSIGHT(         // 통찰 유도 - 패턴 발견
-        "통찰 유도",
-        "패턴 발견, 새로운 관점 제시, 깊은 성찰을 유도할 때"
-    ),
-    ACTION(          // 행동 계획 - 실천 방법
-        "행동 계획",
-        "실천 가능한 작은 변화, 구체적 행동 계획을 세울 때"
-    ),
-    CLOSING(         // 마무리 - 정리
-        "마무리",
-        "오늘 대화 정리, 긍정적 마무리, 다음 만남을 기대할 때"
-    )
-}
-```
+## 6. 배포 및 환경
 
-### 5.2 AI 자율 진행 규칙
-- 메시지 수 기반 최소 단계 보장
-- 이전 단계로 회귀 방지
-- 선택 가능한 단계 중 선택
-- 코드블록 없는 순수 JSON 응답
+| 구분 | 환경 | 주요 설정 |
+|------|------|-----------|
+| 개발 | `spring.profiles.active=dev` | H2 in-memory, ResponseAspect 비활성, Swagger UI 노출 |
+| 테스트 | `test` | H2 + JUnit5, MockK 기반 통합 테스트, `@Transactional` 롤백 |
+| 운영 | Railway | PostgreSQL 15, ResponseAspect로 HTTP Status 매핑, `.env` 기반 비밀값, Actuator health 체크 |
 
-## 6. 데이터베이스 스키마
+CI/CD는 GitHub Actions 워크플로(`.github/workflows/ci.yml`, `pr-check.yml`)에서 `./gradlew check-all`과 Expo EAS 빌드를 실행한다.
 
-### 6.1 주요 테이블
-```sql
--- users 테이블
-CREATE TABLE users (
-    id BIGSERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    nickname VARCHAR(100) NOT NULL,
-    auth_provider VARCHAR(20) NOT NULL,
-    provider_id VARCHAR(255),
-    last_login_at TIMESTAMP,
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+## 7. 보안·관측·성능 고려사항
+- JWT는 `Authorization` 헤더로 전달되며 Refresh 토큰은 바디 파라미터로만 처리한다.
+- `OpenRouterService` 오류는 WARN 로그와 함께 사용자에게 재시도 메시지를 반환하며, 타임아웃 시 사용자 메시지를 롤백한다.
+- 로그 레벨은 `com.aicounseling` DEBUG, 웹/보안 패키지는 INFO 이상으로 설정돼 문제 상황을 추적한다.
+- 초기 데이터 시드는 운영 환경에서도 상담사 seed만 생성하도록 try/catch로 감싸져 있다.
 
--- counselors 테이블
-CREATE TABLE counselors (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
-    title VARCHAR(100) NOT NULL,
-    description TEXT NOT NULL,
-    base_prompt TEXT NOT NULL,
-    avatar_url VARCHAR(500),
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- chat_sessions 테이블
-CREATE TABLE chat_sessions (
-    id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(id) NOT NULL,
-    counselor_id BIGINT REFERENCES counselors(id) NOT NULL,
-    title VARCHAR(100),
-    is_bookmarked BOOLEAN DEFAULT false,
-    last_message_at TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    closed_at TIMESTAMP
-);
-```
-
-## 7. API 엔드포인트
-
-### 7.1 인증 API
-```http
-POST /api/auth/login/google   # Google 토큰 검증 + JWT 발급
-POST /api/auth/login/kakao    # Kakao 토큰 검증 + JWT 발급  
-POST /api/auth/login/naver    # Naver 토큰 검증 + JWT 발급
-POST /api/auth/refresh         # JWT 토큰 갱신
-```
-
-### 7.2 사용자 API
-```http
-GET /api/users/me              # 내 정보 조회
-PATCH /api/users/nickname      # 닉네임 변경
-DELETE /api/users/me           # 회원 탈퇴
-```
-
-### 7.3 상담사 API
-```http
-GET /api/counselors                     # 상담사 목록 (페이지네이션)
-GET /api/counselors/{id}                # 상담사 상세
-GET /api/counselors/favorites           # 즐겨찾기 목록 (페이지네이션)
-POST /api/counselors/{id}/favorite      # 즐겨찾기 추가
-DELETE /api/counselors/{id}/favorite    # 즐겨찾기 제거
-```
-
-### 7.4 세션 API
-```http
-GET /api/sessions                        # 내 세션 목록 조회 (페이지네이션)
-POST /api/sessions                       # 새 세션 시작
-POST /api/sessions/{id}/close            # 세션 종료
-GET /api/sessions/{id}/messages          # 메시지 목록 조회 (페이지네이션)
-POST /api/sessions/{id}/messages         # 메시지 전송
-POST /api/sessions/{id}/rating           # 세션 평가
-POST /api/sessions/{id}/bookmark         # 북마크 토글
-PATCH /api/sessions/{id}/title           # 세션 제목 변경
-```
-
-## 8. 배포 아키텍처
-
-### 8.1 개발 환경
-```
-Android Studio (에뮬레이터)
-    ↓
-localhost:8080 (Spring Boot)
-    ↓
-H2 In-Memory DB
-```
-
-### 8.2 운영 환경
-```
-Android App (Play Store)
-    ↓
-Railway/Render (Spring Boot)
-    ↓
-Supabase (PostgreSQL)
-```
-
-## 9. 보안
-
-### 9.1 인증/인가
-- OAuth2 소셜 로그인만 지원
-- JWT 토큰 기반 인증
-- Spring Security 설정
-
-### 9.2 API 보안
-- HTTPS 필수
-- API Key 환경변수 관리
-- Rate Limiting (추후)
-
-## 10. 성능 최적화
-
-### 10.1 현재 적용
-- Spring WebFlux 비동기
-- Kotlin Coroutines
-- JPA 지연 로딩
-
-### 10.2 추후 적용
-- Redis 캐싱
-- 응답 압축
-- CDN (이미지/정적 파일)
-
-## 11. 모니터링 (추후)
-
-### 11.1 APM
-- Spring Actuator
-- Prometheus + Grafana
-
-### 11.2 로깅
-- Logback
-- ELK Stack (추후)
-
-## 12. 확장 계획
-
-### Phase 1 - MVP (완료 - 2025년 1월)
-- OAuth 2.0 소셜 로그인 (Google, Kakao, Naver)
-- JWT 기반 인증 시스템
-- 상담사 목록 조회 및 상세 정보
-- AI와 실시간 대화 (5단계 상담 프로세스)
-- 세션 북마크 및 제목 관리
-- 세션 평가 시스템
-- 즐겨찾기 상담사 관리
-- 103개 테스트 통과 (100% 성공률)
-
-### Phase 2 (개발 예정)
-- 대화 내용 검색
-- 세션 요약 기능
-- 상담 통계 대시보드
-- 프리미엄 상담사
-
-### Phase 3 (장기 계획)
-- 실시간 알림 (WebSocket)
-- 음성 상담 기능
-- 그룹 상담 세션
-- AI 감정 분석
+## 8. 확장 계획
+- Redis 캐시로 상담사 목록과 세션 메타데이터를 캐싱할 예정이며, Railway의 Redis 애드온 도입을 검토 중이다.
+- 대화 검색·요약 기능을 위해 벡터 스토리지(예: Supabase Vector, Pinecone) 연동을 검토하고 있다.
+- Expo 앱에서 푸시 알림, 인앱 결제(프리미엄 상담사)를 지원할 수 있도록 관련 백엔드 엔드포인트를 추가할 계획이다.

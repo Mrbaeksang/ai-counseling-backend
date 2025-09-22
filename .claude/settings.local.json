@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-
+      "WebSearch",
+      "mcp__context-7__resolve-library-id",
+      "mcp__context-7__get-library-docs"
     ],
     "deny": [],
     "ask": []

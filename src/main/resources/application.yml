@@ -7,6 +7,13 @@ spring:
   jpa:
     open-in-view: false  # 성능 최적화
 
+  cache:
+    type: redis
+
+  data:
+    redis:
+      url: ${REDIS_URL:}
+
   security:
     user:
       name: admin

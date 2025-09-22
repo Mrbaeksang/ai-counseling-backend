@@ -1,147 +1,131 @@
 # ERD (Entity Relationship Diagram)
 
-## 데이터베이스 스키마 설계
+## 데이터베이스 스키마 개요
 
 ```mermaid
 erDiagram
-    users ||--o{ chat_sessions : "has"
+    users ||--o{ chat_sessions : "owns"
     users ||--o{ favorite_counselors : "favorites"
     users ||--o{ counselor_ratings : "rates"
-    
+
     counselors ||--o{ chat_sessions : "conducts"
-    counselors ||--o{ favorite_counselors : "favorited_by"
+    counselors ||--o{ favorite_counselors : "bookmarked_by"
     counselors ||--o{ counselor_ratings : "rated_by"
-    
+
     chat_sessions ||--o{ messages : "contains"
-    
+
     users {
-        bigint id PK "BaseEntity"
-        varchar email "NOT NULL"
+        bigint id PK
+        varchar email "UNIQUE NOT NULL"
         varchar nickname "NOT NULL, length 100"
-        enum auth_provider "GOOGLE/KAKAO/NAVER"
-        varchar provider_id "OAuth 제공자 ID"
-        varchar profile_image_url "length 500, nullable"
+        enum auth_provider "GOOGLE | KAKAO"
+        varchar provider_id "OAuth provider user id"
+        varchar profile_image_url "nullable"
         boolean is_active "default true"
-        timestamp created_at "BaseEntity"
-        timestamp updated_at "BaseEntity"
         timestamp last_login_at "nullable"
+        integer available_sessions "default 0"
+        integer daily_ads_watched "default 0"
+        timestamp ads_reset_date "default now()"
+        timestamp created_at
+        timestamp updated_at
     }
-    
+
     counselors {
-        bigint id PK "BaseEntity"
-        varchar name "NOT NULL, UK"
+        bigint id PK
+        varchar name "UNIQUE NOT NULL"
         varchar title "NOT NULL"
         text description "NOT NULL"
-        text base_prompt "AI 지시사항"
+        text base_prompt "AI persona prompt"
         varchar avatar_url "nullable"
+        varchar categories "comma separated"
         boolean is_active "default true"
-        timestamp created_at "BaseEntity"
-        timestamp updated_at "BaseEntity"
+        timestamp created_at
+        timestamp updated_at
     }
-    
+
     chat_sessions {
-        bigint id PK "BaseEntity"
+        bigint id PK
         bigint user_id FK "NOT NULL"
         bigint counselor_id FK "NOT NULL"
         varchar title "nullable, length 100"
         boolean is_bookmarked "default false"
-        timestamp created_at "BaseEntity"
-        timestamp updated_at "BaseEntity"
         timestamp last_message_at "nullable"
-        timestamp closed_at "nullable (null = 진행중)"
+        timestamp closed_at "nullable"
+        timestamp created_at
+        timestamp updated_at
     }
-    
+
     messages {
-        bigint id PK "BaseEntity"
+        bigint id PK
         bigint session_id FK "NOT NULL"
-        enum sender_type "USER/AI"
+        enum sender_type "USER | AI"
         text content "NOT NULL"
-        enum phase "ENGAGEMENT/EXPLORATION/INSIGHT/ACTION/CLOSING"
-        timestamp created_at "BaseEntity"
-        timestamp updated_at "BaseEntity"
+        enum phase "ENGAGEMENT | EXPLORATION | INSIGHT | ACTION | CLOSING"
+        timestamp created_at
+        timestamp updated_at
     }
-    
+
     favorite_counselors {
-        bigint id PK "BaseEntity"
-        bigint user_id FK "NOT NULL"
-        bigint counselor_id FK "NOT NULL, UK with user_id"
-        timestamp created_at "BaseEntity"
-        timestamp updated_at "BaseEntity"
-    }
-    
-    counselor_ratings {
-        bigint id PK "BaseEntity"
+        bigint id PK
         bigint user_id FK "NOT NULL"
         bigint counselor_id FK "NOT NULL"
-        bigint session_id FK "NOT NULL, UK"
-        integer rating "1-10 (UI: 별 0.5개=1, 별 5개=10)"
-        text feedback "nullable, length 500"
-        timestamp created_at "BaseEntity"
-        timestamp updated_at "BaseEntity"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    counselor_ratings {
+        bigint id PK
+        bigint user_id FK "NOT NULL"
+        bigint counselor_id FK "NOT NULL"
+        bigint session_id FK "UNIQUE NOT NULL"
+        integer rating "1~10"
+        text review "nullable, length 500"
+        timestamp created_at
+        timestamp updated_at
     }
 ```
 
 ## 테이블 설명
 
-### 1. users
-- 사용자 정보 저장
-- `auth_provider`: OAuth 제공자 (Google/Kakao/Naver)
-- `provider_id`: OAuth 제공자가 주는 고유 ID
-- `profile_image_url`: OAuth에서 가져온 프로필 이미지
-- `is_active`: 계정 활성화 상태
+### users
+- OAuth 기반 사용자 계정 정보를 저장한다.
+- `auth_provider`는 현재 Google 또는 Kakao만 허용한다.
+- `available_sessions`, `daily_ads_watched`, `ads_reset_date`는 향후 보상 정책/광고 모델을 위한 필드다.
 
-### 2. counselors
-- 상담사(AI 페르소나) 정보
-- `base_prompt`: AI에게 전달할 기본 지시사항 (성격 특성 포함)
-  - 상담 스타일, 질문 성향, 공감 수준 등을 텍스트로 포함
-  - 현대적 언어 사용, 단계별 상담 진행 지시 포함
-- `avatar_url`: 프론트엔드에서 표시할 상담사 프로필 이미지
+### counselors
+- AI 상담사 페르소나 메타데이터를 보관한다.
+- `base_prompt`는 OpenRouter 호출 시 시스템 메시지로 사용된다.
+- `categories`는 프론트엔드에서 필터링을 위한 카테고리 ID를 콤마로 저장한다.
 
-### 3. chat_sessions
-- 사용자와 상담사 간의 대화 세션
-- `title`: 세션 제목 (첫 메시지 기반 자동 생성, 사용자 수정 가능)
-- `is_bookmarked`: 사용자가 북마크한 세션
-- `last_message_at`: 마지막 메시지 시간
-- `closed_at`: 세션 종료 시간 (null = 진행중)
+### chat_sessions
+- 사용자와 상담사 간의 대화 세션을 나타낸다.
+- `last_message_at`은 세션 목록 정렬에 사용되며 메시지 저장 시 갱신된다.
+- `closed_at`이 null이면 진행 중, 값이 존재하면 종료된 세션이다.
 
-### 4. messages
-- 개별 메시지 저장
-- `sender_type`: 메시지 발신자 (USER/AI)
-- `phase`: 메시지가 속한 상담 단계
-  - ENGAGEMENT: 관계 형성
-  - EXPLORATION: 문제 탐색
-  - INSIGHT: 통찰 유도
-  - ACTION: 행동 계획
-  - CLOSING: 마무리
+### messages
+- 개별 메시지를 저장하며 AI·사용자 메시지를 모두 포함한다.
+- `phase`는 AI가 판단한 상담 단계를 기록한다.
+- `created_at`은 세션 타임라인을 구성하는 기준이다.
 
-### 5. favorite_counselors
-- 사용자가 즐겨찾기한 상담사
-- 빠른 접근을 위한 매핑 테이블
+### favorite_counselors
+- 사용자-상담사 즐겨찾기 관계를 관리한다.
+- `user_id`, `counselor_id`는 유니크 제약을 가진다.
 
-### 6. counselor_ratings
-- 세션 종료 후 상담사 평가
-- `rating`: 1-10 정수값 (DB 저장)
-  - UI 표시: 별점 0.5~5.0 (반개 단위)
-  - 변환: DB값 ÷ 2 = 별점, 별점 × 2 = DB값
-  - 예: 1=★☆☆☆☆, 5=★★★☆☆, 10=★★★★★
-- `feedback`: 피드백 텍스트 (최대 500자)
-- 각 세션당 1개의 평가만 가능 (session_id UK)
+### counselor_ratings
+- 종료된 세션에 대한 평점과 피드백을 저장한다.
+- `session_id`는 유니크하여 세션당 하나의 평가만 허용된다.
 
 ## 인덱스 전략
-
 ```sql
--- 자주 사용되는 조회를 위한 인덱스
-CREATE INDEX idx_sessions_user_id ON chat_sessions(user_id);
-CREATE INDEX idx_sessions_counselor_id ON chat_sessions(counselor_id);
-CREATE INDEX idx_messages_session_id ON messages(session_id);
-CREATE INDEX idx_messages_created_at ON messages(created_at);
-CREATE INDEX idx_ratings_counselor_id ON counselor_ratings(counselor_id);
+CREATE INDEX idx_users_provider ON users(provider_id, auth_provider);
+CREATE INDEX idx_counselors_active ON counselors(is_active);
+CREATE INDEX idx_sessions_user ON chat_sessions(user_id, last_message_at DESC);
+CREATE INDEX idx_messages_session ON messages(session_id, created_at);
+CREATE INDEX idx_favorites_user ON favorite_counselors(user_id);
+CREATE INDEX idx_ratings_counselor ON counselor_ratings(counselor_id);
 ```
 
-## 주요 변경사항
-
-1. **OAuth 기반 인증**: Google/Kakao/Naver OAuth만 사용
-2. **세션 북마크**: 개별 메시지가 아닌 세션 단위 북마크
-3. **세션 요약 제거**: 과도한 기능 제거로 MVP 단순화
-4. **사용자 선호도 제거**: preference_matrix 제거, AI 도우미가 추천
-5. **심플한 구조**: 핵심 기능만 남기고 단순화
+## 스키마 관리 메모
+- 모든 엔티티는 `BaseEntity`를 상속해 `created_at`, `updated_at`을 자동 기록한다.
+- 테스트 프로필에서는 H2 + `ddl-auto=create-drop`으로 스키마를 매 테스트 시드한다.
+- 운영 환경은 Flyway 대신 JPA DDL로 관리하며, 구조 변경 시 마이그레이션 스크립트를 수동 적용한다.

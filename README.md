@@ -1,18 +1,19 @@
 <div align="center">
 
-# 🧠 AI 철학 상담 앱
+# 🧠 AI 철학 상담 앱 (Personal Project)
 
-### **AI 철학자들과 함께하는 맞춤형 상담 서비스**
+### **AI Persona와의 1:1 상담을 위한 Kotlin/Spring 백엔드**
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.4-brightgreen?style=for-the-badge&logo=spring)](https://spring.io/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-7F52FF?style=for-the-badge&logo=kotlin)](https://kotlinlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-103%20Passed-success?style=for-the-badge)](https://github.com/Mrbaeksang/ai-counseling-app)
-[![License](https://img.shields.io/badge/License-Private-red?style=for-the-badge)]()
+[![Tests](https://img.shields.io/badge/Tests-95%20cases-blue?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/Status-Personal%20Project-blueviolet?style=for-the-badge)]()
 
-[**📚 API 문서**](./docs/api-specification.yaml) • 
-[**🏗️ 아키텍처**](./docs/system-architecture.md) • 
-[**📊 데이터베이스**](./docs/erd-diagram.md) • 
-[**📋 요구사항**](./docs/SRS.md)
+[**📋 요구사항 (SRS)**](docs/SRS.md) •
+[**🏗️ 아키텍처**](docs/system-architecture.md) •
+[**📊 ERD**](docs/erd-diagram.md) •
+[**🗨️ 유스케이스**](docs/use-case-diagram.md) •
+[**🧾 API 스펙**](docs/api-specification.yaml)
 
 </div>
 
@@ -20,300 +21,151 @@
 
 ## ✨ 프로젝트 소개
 
-**AI 철학 상담 앱**은 역사적 철학자들의 사상과 상담 기법을 AI로 구현한 혁신적인 상담 서비스입니다. 
-OpenRouter API를 통해 각 철학자의 고유한 상담 스타일을 재현하며, 5단계 상담 프로세스를 통해 체계적인 심리 상담을 제공합니다.
+이 레포는 제가 설계·구현하고 있는 개인용 상담 서비스 실험입니다. 역사·심리학 기반 상담사 페르소나를 AI로 재현하고, 5단계 상담 프로세스를 통해 사용자가 지속적인 대화를 이어갈 수 있도록 돕습니다.
 
-### 🎯 핵심 특징
+### 핵심 특징
+- 🤖 **40+ AI 상담사 페르소나** – `InitDataConfig`를 통해 시드되고 DDD 계층으로 분리된 도메인 로직이 응답을 조율합니다.
+- 🔄 **5단계 상담 프로세스 엔진** – ENGAGEMENT → EXPLORATION → INSIGHT → ACTION → CLOSING 자동 전환과 제목 생성 로직 내장.
+- 🔐 **이중 토큰 인증** – Google/Kakao OAuth 검증 후 Access/Refresh JWT 발급, `RsData` 포맷으로 일관 응답.
+- 💬 **세션·메시지 파이프라인** – 자동 제목, 북마크, 종료, 평가, 메시지 페이징을 하나의 `ChatSessionService`에서 orchestration.
+- 📊 **Kotlin JDSL 통계 쿼리** – 상담사 목록/상세에서 평균 평점, 세션 수를 실시간 집계.
 
-- 🤖 **30+ AI 철학자/상담사** - 소크라테스부터 현대 심리학자까지
-- 🔄 **5단계 상담 프로세스** - AI가 자율적으로 상담 단계 전환
-- 🔐 **OAuth 2.0 인증** - Google, Kakao, Naver 소셜 로그인
-- 📱 **RESTful API** - 모바일 앱 연동 준비 완료
-- ✅ **100% 테스트 커버리지** - 103개 테스트 케이스 통과
+문서는 `SRS → system-architecture → erd/use-case → api-specification` 순으로 읽으면 흐름이 자연스럽습니다.
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- JDK 21+
-- Gradle 8.5+
-- PostgreSQL 14+ (Production)
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/Mrbaeksang/ai-counseling-app.git
-cd ai-counseling-app
+## 🗂️ 리포지토리 구조 (Backend)
+```text
+backend/
+├── docs/                  # 요구사항·아키텍처·ERD·API 문서
+├── src/
+│   ├── main/
+│   │   ├── kotlin/com/aicounseling/app/
+│   │   │   ├── domain/      # user, counselor, session 도메인 계층
+│   │   │   └── global/      # auth, security, openrouter, rsData 등 공통 계층
+│   │   └── resources/       # application.yml, 프로필 설정, 초기 데이터 템플릿
+│   └── test/                # MockMvc + Spring Boot 통합/단위 테스트
+├── build.gradle.kts        # Gradle 8.14.3 빌드 스크립트
+└── README.md
 ```
 
-2. **Set environment variables**
-```bash
-# .env 파일 생성
-OPENROUTER_API_KEY=your_api_key_here
-JWT_SECRET=your_jwt_secret_here
-DB_URL=jdbc:postgresql://localhost:5432/aicounseling
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-```
+---
 
-3. **Run the application**
+## 🛠️ 기술 스택 (Backend)
+| 범주 | 사용 기술 |
+|------|-----------|
+| Core Runtime | Kotlin 1.9.25 · Spring Boot 3.5.4 · Java 21 · Gradle 8.14.3 |
+| Web & API | Spring MVC/MockMvc · Spring Security · WebFlux(WebClient) · SpringDoc OpenAPI 2.7 |
+| Data Layer | Spring Data JPA · Kotlin JDSL 3.5.5 · PostgreSQL 15 · H2 (test) |
+| AI Integration | OpenRouter Chat Completions · Coroutines/Reactive WebClient |
+| Code Quality | ktlint 12 · detekt 1.23 · JUnit5 · MockK · SpringMockK |
+| Operations | Actuator · GitHub Actions · Railway (prod) |
+
+---
+
+## 🚀 빠른 시작
+### Backend
 ```bash
+# 필수: JDK 21+, Git, (옵션) PostgreSQL 15
+cd backend
+cp .env.example .env
+# OPENROUTER_API_KEY, JWT_SECRET, DB_URL/USER/PASSWORD, GOOGLE/KAKAO 클라이언트 키 입력
+# (선택) REDIS_URL=redis://user:pass@host:port 형식으로 설정 시 Redis 캐시 활성화
 ./gradlew bootRun
+# Swagger UI  : http://localhost:8080/swagger-ui/index.html
+# Actuator    : http://localhost:8080/actuator/health
 ```
+- 기본 프로파일은 `dev`; 운영 배포 시 `SPRING_PROFILES_ACTIVE=prod`로 ResponseAspect를 활성화합니다.
 
-4. **Access Swagger UI**
-```
-http://localhost:8080/swagger-ui.html
-```
-
----
-
-## 🏗️ Architecture
-
-### Tech Stack
-
-<table>
-<tr>
-<td align="center" width="50%">
-
-**Backend**
-- **Language**: Kotlin 1.9.25
-- **Framework**: Spring Boot 3.5.4
-- **Architecture**: DDD (Domain-Driven Design)
-- **Database**: PostgreSQL + H2
-- **ORM**: JPA + JDSL 3.5.5
-- **API**: RESTful + OpenAPI 3.0
-- **Testing**: JUnit 5 + MockK
-
-</td>
-<td align="center" width="50%">
-
-**Infrastructure**
-- **Authentication**: OAuth 2.0 + JWT
-- **AI Integration**: OpenRouter API
-- **Model**: meta-llama/llama-3.2-3b
-- **Async**: WebFlux + Coroutines
-- **CI/CD**: GitHub Actions
-- **Deployment**: Railway / Docker
-
-</td>
-</tr>
-</table>
-
-### Project Structure
-
-```
-src/main/kotlin/com/aicounseling/app/
-├── 📁 domain/                    # 비즈니스 도메인
-│   ├── 👤 user/                 # 사용자 관리
-│   │   ├── entity/
-│   │   ├── service/
-│   │   ├── repository/
-│   │   └── controller/
-│   ├── 🧑‍🏫 counselor/           # 상담사 관리
-│   │   ├── entity/
-│   │   ├── service/
-│   │   ├── repository/
-│   │   └── controller/
-│   └── 💬 session/              # 상담 세션
-│       ├── entity/
-│       ├── service/
-│       ├── repository/
-│       └── controller/
-└── 🌐 global/                   # 공통 관심사
-    ├── auth/                    # OAuth 인증
-    ├── config/                  # Spring 설정
-    ├── security/                # JWT 보안
-    ├── openrouter/              # AI API 통합
-    └── exception/               # 전역 예외 처리
-```
-
----
-
-## 📖 Documentation
-
-| Document | Description |
-|----------|-------------|
-| 📘 [API Specification](./docs/api-specification.yaml) | OpenAPI 3.0 스펙 문서 |
-| 🏛️ [System Architecture](./docs/system-architecture.md) | 시스템 아키텍처 설계 |
-| 📊 [ERD Diagram](./docs/erd-diagram.md) | 데이터베이스 설계 |
-| 📋 [Requirements (SRS)](./docs/SRS.md) | 소프트웨어 요구사항 명세 |
-| 🎭 [Use Case Diagram](./docs/use-case-diagram.md) | 유스케이스 다이어그램 |
-
----
-
-## 🔥 Features
-
-### ✅ 구현 완료 (Phase 1 - MVP, 2025년 9월)
-
-#### 🔐 인증 시스템
-- [x] OAuth 2.0 소셜 로그인 (Google, Kakao, Naver)
-- [x] JWT 토큰 기반 인증 (Access + Refresh Token)
-- [x] 사용자 프로필 관리
-- [x] 회원 탈퇴
-
-#### 💬 상담 시스템
-- [x] 30+ AI 철학자/상담사 구현
-- [x] 5단계 자동 상담 프로세스
-  - `ENGAGEMENT` - 관계 형성
-  - `EXPLORATION` - 문제 탐색
-  - `INSIGHT` - 통찰 유도
-  - `ACTION` - 행동 계획
-  - `CLOSING` - 마무리
-- [x] 실시간 AI 응답 생성
-- [x] 대화 히스토리 관리
-
-#### 📊 세션 관리
-- [x] 세션 생성/종료
-- [x] 세션 북마크
-- [x] 세션 제목 자동 생성 및 수정
-- [x] 세션별 평가 시스템 (1-10점)
-
-#### 🌟 상담사 기능
-- [x] 상담사 목록 조회
-- [x] 상담사 상세 정보
-- [x] 즐겨찾기 관리
-- [x] 상담사별 통계
-
-### 🚧 개발 예정 (Phase 2)
-
-- [ ] Android 앱 개발
-- [ ] 세션 요약 기능
-- [ ] 대화 내용 검색
-- [ ] 상담 통계 대시보드
-
----
-
-## 🧪 Testing
-
+### Frontend
 ```bash
-# Run all tests
-./gradlew test
-
-# Run specific test
-./gradlew test --tests "*.UserServiceTest"
-
-# Generate test report
-./gradlew jacocoTestReport
+# 필수: Node.js 18 LTS 이상, npm, Expo CLI
+cd frontend
+cp .env.example .env
+# API_BASE_URL, GOOGLE/KAKAO CLIENT ID 설정 (NAVER 항목은 현재 미사용)
+npm install
+npm run start    # 또는 npx expo start
 ```
-
-### Test Results
-
-<div align="center">
-
-| Category | Count | Status |
-|----------|-------|--------|
-| **Total Tests** | 103 | ✅ All Passed |
-| **Unit Tests** | 78 | ✅ Passed |
-| **Integration Tests** | 25 | ✅ Passed |
-| **Test Coverage** | 100% | 🎯 Complete |
-
-</div>
+- Expo DevTools에서 `i`(iOS), `a`(Android), `w`(Web)로 실행하거나 Expo Go 앱으로 QR 스캔합니다.
 
 ---
 
-## 📡 API Endpoints
+## ✅ 구현 현황
+### 인증 & 사용자
+- [x] Google / Kakao OAuth 로그인 → JWT 발급 (`/api/auth/login/{provider}`)
+- [x] Refresh 토큰 재발급 (`/api/auth/refresh`)
+- [x] 프로필 조회 (`/api/users/me`), 닉네임 변경, 회원 탈퇴
 
-### Authentication
-```http
-POST   /api/auth/login/google     # Google OAuth 로그인
-POST   /api/auth/login/kakao      # Kakao OAuth 로그인
-POST   /api/auth/login/naver      # Naver OAuth 로그인
-POST   /api/auth/refresh          # 토큰 갱신
-```
+### 상담사 & 세션
+- [x] 상담사 목록/상세 (정렬: popular/rating/recent), 즐겨찾기 관리
+- [x] 세션 생성 → 메시지 전송 → AI 응답 → 북마크/제목 수정 → 종료 흐름
+- [x] 세션 평가 (1~10점, 500자 피드백)
+- [x] 메시지 페이징 조회, 상담 단계 추적, 자동 제목 생성
 
-### User Management
-```http
-GET    /api/users/me              # 내 정보 조회
-PATCH  /api/users/nickname        # 닉네임 변경
-DELETE /api/users/me              # 회원 탈퇴
-```
+### 플랫폼 & 통합
+- [x] ResponseAspect 기반 `RsData` ↔ HTTP Status 매핑 (prod 프로필)
+- [x] OpenRouter WebClient 60초 타임아웃 + 3회 재시도 및 오류 로깅
+- [x] Actuator health 체크, Gradle `check-all` 파이프라인, GitHub Actions CI
 
-### Counselor
-```http
-GET    /api/counselors            # 상담사 목록
-GET    /api/counselors/{id}       # 상담사 상세
-GET    /api/counselors/favorites  # 즐겨찾기 목록
-POST   /api/counselors/{id}/favorite    # 즐겨찾기 추가
-DELETE /api/counselors/{id}/favorite    # 즐겨찾기 제거
-```
-
-### Session & Chat
-```http
-GET    /api/sessions              # 세션 목록
-POST   /api/sessions              # 새 세션 시작
-POST   /api/sessions/{id}/messages      # 메시지 전송
-GET    /api/sessions/{id}/messages      # 메시지 조회
-POST   /api/sessions/{id}/close         # 세션 종료
-POST   /api/sessions/{id}/rating        # 세션 평가
-POST   /api/sessions/{id}/bookmark      # 북마크 토글
-PATCH  /api/sessions/{id}/title         # 제목 변경
-```
+> 테스트는 현재 95개가 실행되며, OAuth 통합 시나리오는 트랜잭션 설정 변경 이후 재검증이 필요합니다. `./gradlew test --tests "*LoginApiTest"`로 확인하세요.
 
 ---
 
-## 🚀 Deployment
+## 🔬 품질 & 자동화
+| 명령 | 설명 |
+|------|------|
+| `./gradlew ktlintCheck` / `ktlintFormat` | Kotlin 스타일 검사 / 자동 정렬 |
+| `./gradlew detekt` | 정적 분석 |
+| `./gradlew test` | 백엔드 단위·통합 테스트 |
+| `./gradlew check-all` | ktlint + detekt + test 통합 실행 |
+| `./gradlew jacocoTestReport` | (선택) 코드 커버리지 리포트 생성 |
 
-### Development
-```bash
-./gradlew bootRun --args='--spring.profiles.active=dev'
-```
-
-### Production
-```bash
-docker build -t ai-counseling-app .
-docker run -p 8080:8080 --env-file .env ai-counseling-app
-```
+GitHub Actions 워크플로(`.github/workflows/ci.yml`, `pr-check.yml`)에서 위 명령을 자동으로 실행합니다.
 
 ---
 
-## 🤝 Contributing
+## 📚 문서 흐름
+| 문서 | 설명 |
+|------|------|
+| [`docs/SRS.md`](docs/SRS.md) | 기능·비기능 요구사항, 용어 정의, 위험 관리 |
+| [`docs/system-architecture.md`](docs/system-architecture.md) | 시스템 구성, 시퀀스 다이어그램, 배포 전략 |
+| [`docs/erd-diagram.md`](docs/erd-diagram.md) | ERD, 테이블 속성, 인덱스 전략 |
+| [`docs/use-case-diagram.md`](docs/use-case-diagram.md) | 유스케이스 다이어그램, 진행 상태 |
+| [`docs/api-specification.yaml`](docs/api-specification.yaml) | OpenAPI 3.0 명세 (RsData 스키마 포함) |
 
-기여는 언제나 환영합니다! 다음 절차를 따라주세요:
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feat/AmazingFeature`)
-5. Open a Pull Request
-
-### Commit Convention
-
-```
-feat: 새로운 기능 추가
-fix: 버그 수정
-docs: 문서 수정
-refactor: 코드 리팩토링
-test: 테스트 추가
-style: 코드 포맷팅
-```
+> 위 순서대로 읽으면 설계 의도와 구현 범위를 빠르게 파악할 수 있습니다.
 
 ---
 
-## 📄 License
+## 🔌 주요 API 요약
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| POST | `/api/auth/login/{google,kakao}` | OAuth 토큰 검증 + JWT 발급 |
+| POST | `/api/auth/refresh` | Refresh 토큰으로 Access/Refresh 재발급 |
+| GET | `/api/users/me` | 내 프로필 조회 |
+| PATCH | `/api/users/nickname` | 닉네임 변경 |
+| GET | `/api/counselors` | 상담사 목록 (정렬/페이징) |
+| GET | `/api/counselors/{id}` | 상담사 상세 |
+| POST | `/api/counselors/{id}/favorite` | 즐겨찾기 추가 (DELETE 제거) |
+| GET | `/api/sessions` | 세션 목록 (bookmarked / isClosed 필터) |
+| POST | `/api/sessions/{id}/messages` | 메시지 전송 + AI 응답 |
+| PATCH | `/api/sessions/{id}/bookmark` | 세션 북마크 토글 |
+| PATCH | `/api/sessions/{id}/title` | 세션 제목 수정 |
+| POST | `/api/sessions/{id}/rate` | 세션 평가 |
 
-Private Repository - 상업적 사용 금지
+자세한 요청/응답 스키마와 코드 예시는 Swagger UI 혹은 OpenAPI 파일에서 확인할 수 있습니다.
 
 ---
 
-## 👨‍💻 Developer
-
-<div align="center">
-
-**백상현 (Sanghyeon Baek)**
-
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Mrbaeksang)
-[![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:qortkdgus95@gmail.com)
-
-</div>
+## 📦 배포 메모
+- **Backend**: Railway (PostgreSQL) + OpenRouter API 키 환경 변수, `prod` 프로필 사용.
+- **Frontend**: Expo EAS Build, Google/Kakao 네이티브 키는 Expo Config Plugins로 주입.
+- **ResponseAspect**: 운영 환경에서 `RsData.resultCode`에 따라 HTTP Status를 재설정합니다 (`S-204` → 204 등).
 
 ---
 
 <div align="center">
 
-### 🌟 Star this repository if you find it helpful!
+### 🙌 프로젝트 관련 제안이나 질문은 이슈로 남겨주세요.
 
 </div>
