@@ -17,7 +17,7 @@ class ChatSessionCacheService(
 ) {
     @Cacheable(
         cacheNames = ["user-sessions"],
-        key = "T(java.lang.String).format('user:%d:b:%s:c:%s:p:%d:s:%d', #userId, #bookmarked, #isClosed, #pageable.pageNumber, #pageable.pageSize)",
+        key = USER_SESSION_CACHE_KEY,
     )
     fun getUserSessions(
         userId: Long,
@@ -30,7 +30,7 @@ class ChatSessionCacheService(
 
     @Cacheable(
         cacheNames = ["session-messages"],
-        key = "T(java.lang.String).format('session:%d:p:%d:s:%d', #sessionId, #pageable.pageNumber, #pageable.pageSize)",
+        key = SESSION_MESSAGES_CACHE_KEY,
     )
     fun getSessionMessages(
         sessionId: Long,
@@ -45,5 +45,14 @@ class ChatSessionCacheService(
                 )
             }
         return PageImpl(content, messages.pageable, messages.totalElements)
+    }
+
+    companion object {
+        private const val USER_SESSION_CACHE_KEY =
+            "T(java.lang.String).format('user:%d:b:%s:c:%s:p:%d:s:%d', " +
+                "#userId, #bookmarked, #isClosed, #pageable.pageNumber, #pageable.pageSize)"
+        private const val SESSION_MESSAGES_CACHE_KEY =
+            "T(java.lang.String).format('session:%d:p:%d:s:%d', " +
+                "#sessionId, #pageable.pageNumber, #pageable.pageSize)"
     }
 }

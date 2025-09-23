@@ -6,15 +6,15 @@ import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
 import com.aicounseling.app.domain.user.entity.User
 import com.aicounseling.app.domain.user.repository.UserRepository
-import com.aicounseling.app.global.openrouter.OpenRouterService
 import com.aicounseling.app.global.security.AuthProvider
 import com.aicounseling.app.global.security.JwtTokenProvider
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.github.cdimascio.dotenv.dotenv
-import io.mockk.coEvery
+import io.mockk.every
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.springframework.ai.chat.client.ChatClient
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -41,7 +41,7 @@ abstract class ChatSessionControllerBaseTest(
     protected val messageRepository: MessageRepository,
 ) {
     @MockkBean(relaxed = true)
-    protected lateinit var openRouterService: OpenRouterService
+    protected lateinit var chatClient: ChatClient
 
     companion object {
         private val dotenv =
@@ -58,7 +58,7 @@ abstract class ChatSessionControllerBaseTest(
                     ?: dotenv["OPENROUTER_API_KEY"]
                     ?: "test-api-key" // CI에서는 실제 API를 호출하지 않도록 더미 키 사용
 
-            registry.add("openrouter.api-key") { apiKey }
+            registry.add("spring.ai.openai.api-key") { apiKey }
             registry.add("jwt.secret") {
                 System.getenv("JWT_SECRET")
                     ?: dotenv["JWT_SECRET"]
@@ -73,11 +73,7 @@ abstract class ChatSessionControllerBaseTest(
 
     @BeforeEach
     fun setupTestData() {
-        // Mock 설정
-        coEvery { openRouterService.sendMessage(any(), any(), any()) } returns "테스트 AI 응답입니다. 철학적 상담을 제공합니다."
-        // sendCounselingMessage는 4개의 파라미터를 받음: userMessage, counselorPrompt, conversationHistory, includeTitle
-        coEvery { openRouterService.sendCounselingMessage(any(), any(), any(), any()) } returns
-            """{"content":"당신의 마음을 이해합니다.","currentPhase":"ENGAGEMENT","sessionTitle":"상담"}"""
+        every { chatClient.prompt() } throws IllegalStateException("Mock ChatClient is not configured for this test.")
 
         // 테스트 사용자 생성
         testUser =

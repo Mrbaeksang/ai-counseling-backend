@@ -12,6 +12,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  ai:
+    openai:
+      chat:
+        options:
+          custom-headers:
+            HTTP-Referer: ${OPENROUTER_SITE_URL:https://ai-counseling-backend-production.up.railway.app}
+
 # 운영 환경 CORS 설정 (모바일 앱은 origin이 없으므로 * 허용)
 cors:
   allowed-origins:
@@ -23,10 +30,6 @@ cors:
     - DELETE
   allowed-headers: "*"
   allow-credentials: true
-
-# OpenRouter 프로덕션 설정 오버라이드
-openrouter:
-  site-url: ${OPENROUTER_SITE_URL:https://ai-counseling-backend-production.up.railway.app}
 
 # 운영 환경 로깅
 logging:

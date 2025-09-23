@@ -72,7 +72,7 @@ class ChatSessionIntegrationTest
                         ?: dotenv["OPENROUTER_API_KEY"]
                         ?: "test-api-key"
 
-                registry.add("openrouter.api-key") { apiKey }
+                registry.add("spring.ai.openai.api-key") { apiKey }
                 registry.add("jwt.secret") {
                     System.getenv("JWT_SECRET")
                         ?: dotenv["JWT_SECRET"]

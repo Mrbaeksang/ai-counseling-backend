@@ -3,7 +3,8 @@
     "allow": [
       "WebSearch",
       "mcp__context-7__resolve-library-id",
-      "mcp__context-7__get-library-docs"
+      "mcp__context-7__get-library-docs",
+      "mcp__notion__notion-create-pages"
     ],
     "deny": [],
     "ask": []
