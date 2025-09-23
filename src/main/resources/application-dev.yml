@@ -19,6 +19,12 @@ spring:
         show_sql: true
         dialect: org.hibernate.dialect.H2Dialect
 
+  cache:
+    type: none
+
+redis:
+  enabled: false
+
 # 개발 환경 CORS 설정
 cors:
   allowed-origins:

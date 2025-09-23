@@ -27,6 +27,7 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencies {
@@ -42,8 +43,11 @@ dependencies {
     // OAuth2 Client
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
-    // WebFlux (OpenRouter API 호출용)
+    // WebFlux (OAuth 토큰 검증 등 비동기 HTTP 호출)
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+    // Spring AI
+    implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter:1.0.0-M6")
 
     // Kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

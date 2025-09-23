@@ -1,7 +1,6 @@
 package com.aicounseling.app.domain.session.service
 
 import com.aicounseling.app.domain.counselor.dto.RateSessionRequest
-import com.aicounseling.app.domain.counselor.entity.Counselor
 import com.aicounseling.app.domain.counselor.service.CounselorService
 import com.aicounseling.app.domain.session.dto.CreateSessionResponse
 import com.aicounseling.app.domain.session.dto.MessageItem
@@ -10,24 +9,22 @@ import com.aicounseling.app.domain.session.entity.ChatSession
 import com.aicounseling.app.domain.session.entity.CounselingPhase
 import com.aicounseling.app.domain.session.entity.Message
 import com.aicounseling.app.domain.session.entity.SenderType
+import com.aicounseling.app.domain.session.prompt.CounselingPromptAssembler
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
 import com.aicounseling.app.global.constants.AppConstants
-import com.aicounseling.app.global.openrouter.OpenRouterService
 import com.aicounseling.app.global.rsData.RsData
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import org.springframework.ai.chat.client.ChatClient
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Caching
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
 import java.time.Instant
 
 @Service
@@ -36,12 +33,13 @@ class ChatSessionService(
     private val sessionRepository: ChatSessionRepository,
     private val counselorService: CounselorService,
     private val messageRepository: MessageRepository,
-    private val openRouterService: OpenRouterService,
+    private val chatClient: ChatClient,
     private val objectMapper: ObjectMapper,
     private val chatSessionCacheService: ChatSessionCacheService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(ChatSessionService::class.java)
+        private const val RAW_RESPONSE_LOG_LIMIT = 1000
     }
 
     /**
@@ -245,6 +243,7 @@ class ChatSessionService(
             CacheEvict(cacheNames = ["session-messages"], allEntries = true),
         ],
     )
+    @Suppress("TooGenericExceptionCaught")
     fun sendMessage(
         userId: Long,
         sessionId: Long,
@@ -254,21 +253,66 @@ class ChatSessionService(
         val session = getSession(sessionId, userId)
         check(session.closedAt == null) { AppConstants.ErrorMessages.SESSION_ALREADY_CLOSED }
 
-        // 1. 사용자 메시지 저장
         val isFirstMessage = messageRepository.countBySessionId(sessionId) == 0L
         val userMessage = saveUserMessage(session, content, isFirstMessage)
 
-        // 2. AI 응답 처리 (통합 메서드 사용)
         val counselor =
             counselorService.findById(session.counselorId)
                 ?: error("상담사를 찾을 수 없습니다: ${session.counselorId}")
-        val (aiMessage, updatedSession) =
-            processAiMessage(
-                session = session,
-                userMessage = userMessage,
-                counselor = counselor,
+
+        val phaseSnapshot = determinePhase(sessionId)
+        val conversationSummary = summarizeConversation(sessionId)
+        val systemPrompt =
+            CounselingPromptAssembler.buildSystemPrompt(
+                counselorBasePrompt = counselor.basePrompt,
+                lastPhase = phaseSnapshot.lastPhase,
+                availablePhases = phaseSnapshot.availablePhases,
+                conversationSummary = conversationSummary,
                 isFirstMessage = isFirstMessage,
             )
+
+        val rawResponse =
+            try {
+                chatClient.prompt()
+                    .system(systemPrompt)
+                    .user(userMessage.content)
+                    .call()
+                    .content()
+                    ?.trim()
+                    .orEmpty()
+            } catch (ex: RuntimeException) {
+                logger.error("Spring AI 호출 실패 - sessionId: {}", sessionId, ex)
+                val (fallbackMessage, fallbackSession) = handleAiError(session, userMessage)
+                return Triple(userMessage, fallbackMessage, fallbackSession)
+            }
+
+        logger.info(
+            "AI 원본 응답 - sessionId: {}, response: {}",
+            sessionId,
+            rawResponse.take(RAW_RESPONSE_LOG_LIMIT),
+        )
+
+        val parsedResponse = parseAiResponse(rawResponse, isFirstMessage)
+        val normalizedPhase = normalizePhase(phaseSnapshot.lastPhase, parsedResponse.phase)
+
+        val aiMessage =
+            messageRepository.save(
+                Message(
+                    session = session,
+                    senderType = SenderType.AI,
+                    content = parsedResponse.content,
+                    phase = normalizedPhase,
+                ),
+            )
+
+        applySessionUpdates(
+            session = session,
+            parsedResponse = parsedResponse,
+            isFirstMessage = isFirstMessage,
+        )
+
+        val updatedSession = sessionRepository.save(session)
+
         return Triple(userMessage, aiMessage, updatedSession)
     }
 
@@ -300,145 +344,59 @@ class ChatSessionService(
         return messageRepository.save(userMessage)
     }
 
-    /**
-     * AI 응답 처리 통합 메서드
-     * 기존 generateAiResponse, requestAiResponseWithRetry, processAiResponse를 하나로 통합
-     */
-    private fun processAiMessage(
-        session: ChatSession,
-        userMessage: Message,
-        counselor: Counselor,
-        isFirstMessage: Boolean,
-    ): Pair<Message, ChatSession> {
-        val sessionId = session.id
-        val messageContent = userMessage.content // userMessage 파라미터 사용 명시
+    private fun summarizeConversation(sessionId: Long): String {
+        val messages = messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId)
+        if (messages.isEmpty()) {
+            return ""
+        }
 
-        try {
-            // 1. AI 응답 요청
-            val aiResponse =
-                requestAiResponseWithRetry(
-                    sessionId = sessionId,
-                    userMessage = messageContent,
-                    counselor = counselor,
-                    isFirstMessage = isFirstMessage,
-                )
-
-            // 2. 응답 파싱 및 저장 (userMessage 전달)
-            return saveAiResponse(
-                session = session,
-                aiResponse = aiResponse,
-                userMessage = userMessage,
-                isFirstMessage = isFirstMessage,
-            )
-        } catch (e: IOException) {
-            logger.error("AI 응답 처리 중 IO 오류 - sessionId: {}, error: {}", sessionId, e.message, e)
-            return handleAiError(session, userMessage)
-        } catch (e: IllegalStateException) {
-            logger.error("AI 응답 처리 중 상태 오류 - sessionId: {}, error: {}", sessionId, e.message, e)
-            return handleAiError(session, userMessage)
-        } catch (e: IllegalArgumentException) {
-            logger.error("AI 응답 처리 중 인자 오류 - sessionId: {}, error: {}", sessionId, e.message, e)
-            return handleAiError(session, userMessage)
+        return messages.joinToString(separator = "\n") { message ->
+            val speaker = if (message.senderType == SenderType.USER) "내담자" else "상담사"
+            val stage = message.phase.displayName
+            val cleaned = message.content.trim()
+            "$speaker [$stage]: $cleaned"
         }
     }
 
-    /**
-     * AI 응답 요청 (재시도 로직 포함)
-     */
-    private fun requestAiResponseWithRetry(
-        sessionId: Long,
-        userMessage: String,
-        counselor: Counselor,
+    private fun normalizePhase(
+        lastPhase: CounselingPhase,
+        suggestedPhase: CounselingPhase,
+    ): CounselingPhase {
+        return if (suggestedPhase.ordinal < lastPhase.ordinal) {
+            lastPhase
+        } else {
+            suggestedPhase
+        }
+    }
+
+    private fun applySessionUpdates(
+        session: ChatSession,
+        parsedResponse: ParsedResponse,
         isFirstMessage: Boolean,
-    ): String =
-        runBlocking {
-            val history = buildConversationHistory(sessionId)
-            val systemPrompt = buildSystemPrompt(counselor, isFirstMessage, sessionId)
-
-            var retryCount = 0
-
-            while (retryCount < AppConstants.Session.AI_RETRY_MAX_COUNT) {
-                val response =
-                    openRouterService.sendCounselingMessage(
-                        userMessage = userMessage,
-                        counselorPrompt = systemPrompt,
-                        conversationHistory = history,
-                        includeTitle = isFirstMessage,
-                    )
-
-                if (response.isNotBlank() && response.length > AppConstants.Session.AI_RESPONSE_MIN_LENGTH) {
-                    return@runBlocking response
-                }
-
-                retryCount++
-                if (retryCount < AppConstants.Session.AI_RETRY_MAX_COUNT) {
-                    logger.warn(
-                        "빈 AI 응답 수신, 재시도 {}/{} - sessionId: {}",
-                        retryCount,
-                        AppConstants.Session.AI_RETRY_MAX_COUNT,
-                        sessionId,
-                    )
-                    delay(AppConstants.Session.AI_RETRY_DELAY_BASE * retryCount)
+    ) {
+        parsedResponse.title?.let { candidateTitle ->
+            if (candidateTitle.isNotBlank()) {
+                val shouldUpdateTitle =
+                    isFirstMessage || session.title.isNullOrBlank() ||
+                        session.title == AppConstants.Session.DEFAULT_SESSION_TITLE
+                if (shouldUpdateTitle) {
+                    val normalizedTitle = candidateTitle.take(AppConstants.Session.TITLE_MAX_LENGTH).trim()
+                    session.title =
+                        normalizedTitle.ifEmpty { AppConstants.Session.DEFAULT_SESSION_TITLE }
                 }
             }
-
-            throw IOException("AI 응답을 받을 수 없습니다")
-        }
-
-    /**
-     * AI 응답 파싱 및 저장
-     */
-    private fun saveAiResponse(
-        session: ChatSession,
-        aiResponse: String,
-        userMessage: Message,
-        isFirstMessage: Boolean,
-    ): Pair<Message, ChatSession> {
-        val sessionId = session.id
-
-        // userMessage 파라미터 사용 (Detekt UnusedParameter 해결)
-        logger.debug("사용자 메시지 저장 - sessionId: {}, messageId: {}", sessionId, userMessage.id)
-
-        // 응답 파싱 (디버깅용 로깅 추가)
-        logger.info("AI 원본 응답 - sessionId: {}, response: {}", sessionId, aiResponse.take(200))
-        val parsedResponse = parseAiResponse(aiResponse, isFirstMessage)
-        logger.info("파싱된 단계 - sessionId: {}, suggestedPhase: {}", sessionId, parsedResponse.phase.name)
-
-        // Phase 검증
-        val phaseResult = determinePhase(sessionId, parsedResponse.phase)
-
-        // 세션 업데이트
-        if (isFirstMessage && parsedResponse.title != null) {
-            session.title =
-                parsedResponse.title.take(AppConstants.Session.TITLE_MAX_LENGTH).trim()
-                    .ifEmpty { AppConstants.Session.DEFAULT_SESSION_TITLE }
         }
         session.lastMessageAt = Instant.now()
-
-        // AI가 세션 종료를 요청한 경우
         if (parsedResponse.shouldEndSession) {
             session.closedAt = Instant.now()
-            logger.info("AI가 세션 종료를 요청함 - sessionId: {}", sessionId)
         }
-
-        // AI 메시지 저장
-        val aiMessage =
-            Message(
-                session = session,
-                senderType = SenderType.AI,
-                content = parsedResponse.content,
-                phase = phaseResult.currentPhase,
+        if (parsedResponse.qualityWarnings.isNotEmpty()) {
+            logger.info(
+                "품질 체크 피드백 - sessionId: {} -> {}",
+                session.id,
+                parsedResponse.qualityWarnings.joinToString(" | "),
             )
-
-        val savedMessage = messageRepository.save(aiMessage)
-        val updatedSession = sessionRepository.save(session)
-
-        // Phase 검증 로깅
-        if (phaseResult.currentPhase != parsedResponse.phase) {
-            logger.info("단계 조정됨: {} → {}", parsedResponse.phase.name, phaseResult.currentPhase.name)
         }
-
-        return Pair(savedMessage, updatedSession)
     }
 
     /**
@@ -474,41 +432,19 @@ class ChatSessionService(
     }
 
     /**
-     * Phase 관련 통합 메서드
-     * 기존 4개 메서드(getLastAiPhase, calculateMinimumPhase, getAvailablePhases, validatePhaseTransition)를 통합
-     * @param sessionId 세션 ID
-     * @param messageCount 메시지 개수
-     * @param suggestedPhase AI가 제안한 단계 (optional)
-     * @return PhaseResult 통합된 단계 정보
+     * 최근 AI 응답의 단계를 기반으로 현재 세션에서 허용 가능한 단계를 계산합니다.
      */
-    private fun determinePhase(
-        sessionId: Long,
-        suggestedPhase: CounselingPhase? = null,
-    ): PhaseResult {
+    private fun determinePhase(sessionId: Long): PhaseSnapshot {
         val lastPhase =
             messageRepository.findTopBySessionIdAndSenderTypeOrderByCreatedAtDesc(
                 sessionId,
                 SenderType.AI,
             )?.phase ?: CounselingPhase.ENGAGEMENT
 
-        val validPhase =
-            if (suggestedPhase != null) {
-                if (suggestedPhase.ordinal < lastPhase.ordinal) {
-                    lastPhase
-                } else {
-                    suggestedPhase
-                }
-            } else {
-                lastPhase
-            }
-
         val availablePhases =
-            CounselingPhase.entries
-                .filter { it.ordinal >= lastPhase.ordinal }
-                .joinToString(", ") { it.name }
+            CounselingPhase.entries.filter { it.ordinal >= lastPhase.ordinal }
 
-        return PhaseResult(
-            currentPhase = validPhase,
+        return PhaseSnapshot(
             lastPhase = lastPhase,
             availablePhases = availablePhases,
         )
@@ -517,81 +453,11 @@ class ChatSessionService(
     /**
      * Phase 관련 정보를 담는 데이터 클래스
      */
-    data class PhaseResult(
-        val currentPhase: CounselingPhase,
+    data class PhaseSnapshot(
         val lastPhase: CounselingPhase,
-        val availablePhases: String,
+        val availablePhases: List<CounselingPhase>,
     )
 
-    /**
-     * 대화 히스토리 구성
-     */
-    private fun buildConversationHistory(sessionId: Long): List<com.aicounseling.app.global.openrouter.Message> {
-        return messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId)
-            .dropLast(1)
-            .map { message ->
-                com.aicounseling.app.global.openrouter.Message(
-                    role = if (message.senderType == SenderType.USER) "user" else "assistant",
-                    content = message.content,
-                )
-            }
-    }
-
-    /**
-     * 시스템 프롬프트 구성
-     */
-    private fun buildSystemPrompt(
-        counselor: Counselor,
-        isFirstMessage: Boolean,
-        sessionId: Long,
-    ): String {
-        val phaseResult = determinePhase(sessionId)
-
-        val basePrompt =
-            StringBuilder().apply {
-                // 1. 상담사 톤/스타일 먼저 설정
-                appendLine(counselor.basePrompt)
-                appendLine()
-
-                // 2. 전문 상담 가이드라인
-                appendLine(AppConstants.Session.PROFESSIONAL_COUNSELING_GUIDE)
-                appendLine()
-
-                // 3. 현재 상담 상태
-                appendLine("[현재 상담 상태]")
-                appendLine("- 현재 단계: ${phaseResult.lastPhase.koreanName}(${phaseResult.lastPhase.name})")
-                appendLine("- 선택 가능한 단계: ${phaseResult.availablePhases}")
-                appendLine()
-
-                // 4. 세션 종료 안내
-                appendLine("[세션 종료 안내]")
-                appendLine("상담을 자연스럽게 마무리해야 할 때:")
-                appendLine("- 내담자가 충분한 통찰을 얻었을 때")
-                appendLine("- 대화가 자연스럽게 마무리되었을 때")
-                appendLine("- 상담 목표가 달성되었을 때")
-                appendLine("- CLOSING 단계에서 작별 인사를 나눈 후")
-                appendLine("→ 응답에 \"shouldEnd\": true 를 포함시켜주세요")
-                appendLine()
-
-                // 5. 응답 형식 (마지막에 위치)
-                appendLine(
-                    AppConstants.Session.PROMPT_RESPONSE_FORMAT.format(phaseResult.availablePhases),
-                )
-            }.toString()
-
-        return if (isFirstMessage) {
-            "$basePrompt\n\n${AppConstants.Session.PROMPT_FIRST_MESSAGE_FORMAT}"
-        } else {
-            basePrompt
-        }
-    }
-
-    /**
-     * AI 응답 파싱 통합 메서드 (기존 3개 메서드 통합)
-     * @param rawResponse AI 원본 응답
-     * @param expectTitle 제목 포함 여부 (첫 메시지인 경우)
-     * @return ParsedResponse 파싱된 응답 정보
-     */
     private fun parseAiResponse(
         rawResponse: String,
         expectTitle: Boolean = false,
@@ -601,15 +467,12 @@ class ChatSessionService(
             return parseFallbackResponse("")
         }
 
-        // 마크다운 코드블록 제거
         val cleanedResponse = cleanMarkdownCodeBlock(rawResponse)
 
-        // JSON 형식인 경우 파싱 시도
         if (cleanedResponse.startsWith("{") && cleanedResponse.endsWith("}")) {
             return parseJsonResponse(cleanedResponse, expectTitle, rawResponse)
         }
 
-        // JSON이 아닌 경우 폴백 처리
         logger.warn(
             "AI가 JSON 형식으로 응답하지 않음: {}",
             cleanedResponse.take(AppConstants.Session.LOG_PREVIEW_LENGTH),
@@ -617,18 +480,12 @@ class ChatSessionService(
         return parseFallbackResponse(rawResponse)
     }
 
-    /**
-     * 마크다운 코드블록 제거 헬퍼 메서드
-     */
     private fun cleanMarkdownCodeBlock(rawResponse: String): String {
         return rawResponse.trim()
             .removePrefix("```json").removePrefix("```")
             .removeSuffix("```").trim()
     }
 
-    /**
-     * JSON 응답 파싱 헬퍼 메서드
-     */
     private fun parseJsonResponse(
         cleanedResponse: String,
         expectTitle: Boolean,
@@ -638,30 +495,51 @@ class ChatSessionService(
             val jsonNode = objectMapper.readTree(cleanedResponse)
 
             val content =
-                jsonNode.get("content")?.asText()
+                jsonNode.get("content")?.asText()?.takeIf { it.isNotBlank() }
                     ?: return parseFallbackResponse(rawResponse)
 
             val phase = parsePhaseFromJson(jsonNode)
 
             val title =
-                if (expectTitle) {
-                    jsonNode.get("title")?.asText()?.take(AppConstants.Session.TITLE_MAX_LENGTH)
-                } else {
-                    null
-                }
+                jsonNode.get("title")?.asText()?.take(AppConstants.Session.TITLE_MAX_LENGTH)
+                    ?.takeIf { it.isNotBlank() || expectTitle }
 
             val shouldEndSession = jsonNode.get("shouldEnd")?.asBoolean() ?: false
+            val qualityWarnings = extractQualityWarnings(jsonNode.get("quality"))
 
-            ParsedResponse(content, phase, title, shouldEndSession)
+            ParsedResponse(
+                content = content,
+                phase = phase,
+                title = title,
+                shouldEndSession = shouldEndSession,
+                qualityWarnings = qualityWarnings,
+            )
         } catch (e: JsonProcessingException) {
             logger.error("JSON 파싱 실패: {}", e.message)
             parseFallbackResponse(rawResponse)
         }
     }
 
-    /**
-     * Phase 파싱 헬퍼 메서드
-     */
+    private fun extractQualityWarnings(node: JsonNode?): List<String> {
+        if (node == null || node.isNull) {
+            return emptyList()
+        }
+
+        return when {
+            node.isArray -> node.mapNotNull { textOrNull(it) }
+            node.isObject ->
+                node.fieldNames().asSequence()
+                    .mapNotNull { key ->
+                        val valueText = node.get(key)?.let(::textOrNull) ?: return@mapNotNull null
+                        "$key: $valueText"
+                    }
+                    .toList()
+            else -> textOrNull(node)?.let { listOf(it) } ?: emptyList()
+        }
+    }
+
+    private fun textOrNull(node: JsonNode): String? = node.asText().takeIf { it.isNotBlank() }
+
     private fun parsePhaseFromJson(jsonNode: JsonNode): CounselingPhase {
         return jsonNode.get("phase")?.asText()?.uppercase()?.let {
             try {
@@ -673,9 +551,6 @@ class ChatSessionService(
         } ?: CounselingPhase.ENGAGEMENT
     }
 
-    /**
-     * 파싱 실패 시 폴백 처리 (private helper)
-     */
     @Suppress("RegExpRedundantEscape")
     private fun parseFallbackResponse(rawResponse: String): ParsedResponse {
         val fallbackContent =
@@ -689,16 +564,15 @@ class ChatSessionService(
             phase = CounselingPhase.ENGAGEMENT,
             title = null,
             shouldEndSession = false,
+            qualityWarnings = listOf("FALLBACK_RESPONSE_USED"),
         )
     }
 
-    /**
-     * 파싱된 AI 응답 정보를 담는 데이터 클래스
-     */
     data class ParsedResponse(
         val content: String,
         val phase: CounselingPhase,
         val title: String?,
         val shouldEndSession: Boolean = false,
+        val qualityWarnings: List<String> = emptyList(),
     )
 }

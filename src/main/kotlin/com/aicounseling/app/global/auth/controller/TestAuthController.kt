@@ -54,7 +54,7 @@ class TestAuthController(
         // ID 검증
         val userId =
             testUser.id.takeIf { it != 0L }
-                ?: throw IllegalStateException("User ID not generated")
+                ?: error("User ID not generated")
 
         // JWT 토큰 생성
         val accessToken = jwtTokenProvider.createToken(userId, testUser.email)
@@ -101,7 +101,7 @@ class TestAuthController(
         // ID 검증
         val userId =
             testUser.id.takeIf { it != 0L }
-                ?: throw IllegalStateException("User ID not generated")
+                ?: error("User ID not generated")
 
         // JWT 토큰 생성
         val accessToken = jwtTokenProvider.createToken(userId, testUser.email)
