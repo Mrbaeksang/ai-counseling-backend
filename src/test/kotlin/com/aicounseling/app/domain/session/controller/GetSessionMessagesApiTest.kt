@@ -1,8 +1,7 @@
 package com.aicounseling.app.domain.session.controller
 
-import com.aicounseling.app.domain.counselor.repository.CounselorRepository
+import com.aicounseling.app.domain.character.repository.CharacterRepository
 import com.aicounseling.app.domain.session.entity.ChatSession
-import com.aicounseling.app.domain.session.entity.CounselingPhase
 import com.aicounseling.app.domain.session.entity.Message
 import com.aicounseling.app.domain.session.entity.SenderType
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
@@ -40,7 +39,7 @@ class GetSessionMessagesApiTest
         objectMapper: ObjectMapper,
         jwtTokenProvider: JwtTokenProvider,
         userRepository: UserRepository,
-        counselorRepository: CounselorRepository,
+        characterRepository: CharacterRepository,
         sessionRepository: ChatSessionRepository,
         messageRepository: MessageRepository,
     ) : ChatSessionControllerBaseTest(
@@ -48,7 +47,7 @@ class GetSessionMessagesApiTest
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -84,7 +83,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "철학 상담",
                     ),
                 )
@@ -97,23 +96,20 @@ class GetSessionMessagesApiTest
                             session = session,
                             content = "안녕하세요, 상담을 받고 싶습니다.",
                             senderType = SenderType.USER,
-                            phase = CounselingPhase.ENGAGEMENT,
-                        ),
+                            ),
                     ),
                     messageRepository.save(
                         Message(
                             session = session,
                             content = "안녕하세요! 무엇을 도와드릴까요?",
                             senderType = SenderType.AI,
-                            phase = CounselingPhase.ENGAGEMENT,
-                        ),
+                            ),
                     ),
                     messageRepository.save(
                         Message(
                             session = session,
                             content = "최근에 삶의 의미에 대해 고민이 많습니다.",
                             senderType = SenderType.USER,
-                            phase = CounselingPhase.EXPLORATION,
                         ),
                     ),
                     messageRepository.save(
@@ -121,7 +117,6 @@ class GetSessionMessagesApiTest
                             session = session,
                             content = "삶의 의미에 대한 고민은 인간의 본질적인 질문입니다.",
                             senderType = SenderType.AI,
-                            phase = CounselingPhase.EXPLORATION,
                         ),
                     ),
                 )
@@ -157,7 +152,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -168,7 +163,6 @@ class GetSessionMessagesApiTest
                         session = session,
                         content = "메시지 ${index + 1}",
                         senderType = if (index % 2 == 0) SenderType.USER else SenderType.AI,
-                        phase = CounselingPhase.ENGAGEMENT,
                     ),
                 )
                 // 생성 시간 차이를 보장하기 위해 flush
@@ -211,7 +205,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -235,7 +229,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -266,7 +260,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -275,7 +269,6 @@ class GetSessionMessagesApiTest
                     session = otherSession,
                     content = "다른 사용자의 메시지",
                     senderType = SenderType.USER,
-                    phase = CounselingPhase.ENGAGEMENT,
                 ),
             )
 
@@ -315,7 +308,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -325,7 +318,6 @@ class GetSessionMessagesApiTest
                         session = session,
                         content = "메시지 ${index + 1}",
                         senderType = SenderType.USER,
-                        phase = CounselingPhase.ENGAGEMENT,
                     ),
                 )
             }

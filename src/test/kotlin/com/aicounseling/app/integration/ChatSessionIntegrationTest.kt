@@ -1,7 +1,7 @@
 package com.aicounseling.app.integration
 
-import com.aicounseling.app.domain.counselor.entity.Counselor
-import com.aicounseling.app.domain.counselor.repository.CounselorRepository
+import com.aicounseling.app.domain.character.entity.Character
+import com.aicounseling.app.domain.character.repository.CharacterRepository
 import com.aicounseling.app.domain.session.entity.ChatSession
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
@@ -53,7 +53,7 @@ class ChatSessionIntegrationTest
         private val objectMapper: ObjectMapper,
         private val jwtTokenProvider: JwtTokenProvider,
         private val userRepository: UserRepository,
-        private val counselorRepository: CounselorRepository,
+        private val characterRepository: CharacterRepository,
         private val sessionRepository: ChatSessionRepository,
         private val messageRepository: MessageRepository,
     ) {
@@ -82,7 +82,7 @@ class ChatSessionIntegrationTest
         }
 
         private lateinit var testUser: User
-        private lateinit var testCounselor: Counselor
+        private lateinit var testCharacter: Character
         private lateinit var authToken: String
 
         @BeforeEach
@@ -98,9 +98,9 @@ class ChatSessionIntegrationTest
                     ),
                 )
 
-            testCounselor =
-                counselorRepository.save(
-                    Counselor(
+            testCharacter =
+                characterRepository.save(
+                    Character(
                         name = "소크라테스",
                         title = "고대 그리스 철학자",
                         description = "너 자신을 알라",
@@ -121,7 +121,7 @@ class ChatSessionIntegrationTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "통합 테스트 세션",
                     ),
                 )
@@ -173,7 +173,7 @@ class ChatSessionIntegrationTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "대화 컨텍스트 테스트",
                     ),
                 )

@@ -19,9 +19,7 @@ class TestAiChatConfig {
         """
         {
           "content": "테스트 환경용 기본 응답입니다. 실제 모델은 Spring AI로 대체됩니다.",
-          "phase": "ENGAGEMENT",
-          "title": "테스트 세션",
-          "shouldEnd": false
+          "title": "테스트 세션"
         }
         """.trimIndent()
 

@@ -30,14 +30,7 @@ object AppConstants {
     object Session {
         const val MAX_CONVERSATION_HISTORY = 9
         const val TITLE_MAX_LENGTH = 15
-        const val DEFAULT_SESSION_TITLE = "새 상담"
-
-        // 상담 단계 진행 기준 (메시지 수)
-        const val PHASE_ENGAGEMENT_MAX = 4L
-        const val PHASE_EXPLORATION_START = 10L
-        const val PHASE_EXPLORATION_DEEP = 20L
-        const val PHASE_INSIGHT_START = 30L
-        const val PHASE_ACTION_START = 40L
+        const val DEFAULT_SESSION_TITLE = "새 대화"
 
         // AI 응답 관련
         const val AI_RETRY_MAX_COUNT = 3
@@ -45,25 +38,28 @@ object AppConstants {
         const val AI_RESPONSE_MIN_LENGTH = 10
         const val LOG_PREVIEW_LENGTH = 100
 
-        const val PROMPT_RESPONSE_FORMAT = """[응답 형식]
-반드시 아래 JSON 형식으로만 응답하세요.
-코드블록(```)을 사용하지 마세요. 순수 JSON만 반환하세요.
-{
-  "content": "상담 응답 내용",
-  "phase": "%s 중 하나 (영문 대문자만, 괄호나 한글 설명 없이)",
-  "shouldEnd": false
-}
-- "shouldEnd"는 기본적으로 false로 유지하고, 상담을 자연스럽게 마무리해야 할 때만 true로 설정하세요."""
+        val BASE_SYSTEM_PROMPT_NOTICE: String = """
+[안내]
+- 이 대화는 AI 캐릭터와 나누는 엔터테인먼트용 이야기로, 사실과 다를 수 있습니다.
+- 폭력, 혐오, 개인정보 노출, 의료·법률과 같은 전문 조언을 요청하거나 제공하지 마세요.
+""".trimIndent()
 
-        const val PROMPT_FIRST_MESSAGE_FORMAT = """첫 메시지이므로 세션 제목도 포함하세요.
-코드블록(```)을 사용하지 마세요. 순수 JSON만 반환하세요.
+        val RESPONSE_JSON_FORMAT: String = """
+[응답 형식]
+항상 아래 JSON 형식(코드블록 없이)으로만 응답하세요.
 {
-  "content": "상담 응답 내용",
-  "phase": "ENGAGEMENT",
-  "title": "대화를 요약한 15자 이내 제목",
-  "shouldEnd": false
+  "content": "AI 캐릭터가 전할 대사"
 }
-- 첫 메시지에서는 반드시 "shouldEnd": false로 응답하세요."""
+""".trimIndent()
+
+        val FIRST_MESSAGE_JSON_FORMAT: String = """
+[첫 응답 형식]
+첫 메시지에서는 제목을 포함한 JSON 을 반환하세요. 코드블록은 사용하지 마세요.
+{
+  "content": "첫 응답 내용",
+  "title": "대화를 대표할 15자 이내 제목"
+}
+""".trimIndent()
     }
 
     object Rating {

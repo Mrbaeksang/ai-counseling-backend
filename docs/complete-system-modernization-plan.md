@@ -122,8 +122,7 @@ data class AIResponseGeneratedEvent(
     override val userId: Long,
     val responseId: Long,
     val content: String,
-    val phase: CounselingPhase,
-    val shouldEndSession: Boolean,
+    val metadata: Map<String, String> = emptyMap(),
     override val timestamp: Instant = Instant.now()
 ) : ChatEvent()
 
@@ -238,8 +237,7 @@ class AIResponseProcessor(
                         userId = event.userId,
                         responseId = savedMessage.id,
                         content = aiResponse,
-                        phase = extractPhase(aiResponse),
-                        shouldEndSession = extractEndFlag(aiResponse)
+                        metadata = buildResponseMetadata(aiResponse)
                     )
                 }
             }

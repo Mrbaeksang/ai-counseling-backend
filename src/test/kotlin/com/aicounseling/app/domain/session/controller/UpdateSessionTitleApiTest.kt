@@ -30,7 +30,7 @@ class UpdateSessionTitleApiTest
         objectMapper: com.fasterxml.jackson.databind.ObjectMapper,
         jwtTokenProvider: com.aicounseling.app.global.security.JwtTokenProvider,
         userRepository: com.aicounseling.app.domain.user.repository.UserRepository,
-        counselorRepository: com.aicounseling.app.domain.counselor.repository.CounselorRepository,
+        characterRepository: com.aicounseling.app.domain.character.repository.CharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
         messageRepository: com.aicounseling.app.domain.session.repository.MessageRepository,
     ) : ChatSessionControllerBaseTest(
@@ -38,7 +38,7 @@ class UpdateSessionTitleApiTest
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -73,7 +73,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )
@@ -110,7 +110,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )
@@ -137,7 +137,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )
@@ -200,7 +200,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "다른 사용자의 세션",
                     ),
                 )
@@ -227,7 +227,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )

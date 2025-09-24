@@ -1,6 +1,6 @@
 package com.aicounseling.app.global.controller
 
-import com.aicounseling.app.domain.counselor.repository.CounselorRepository
+import com.aicounseling.app.domain.character.repository.CharacterRepository
 import com.aicounseling.app.global.rsData.RsData
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/health")
 class HealthController(
-    private val counselorRepository: CounselorRepository,
+    private val characterRepository: CharacterRepository,
 ) {
     @GetMapping("/simple")
     fun simpleHealth(): RsData<Map<String, String>> {
@@ -35,7 +35,7 @@ class HealthController(
     @GetMapping("/db-test")
     fun dbTest(): RsData<Map<String, Any>> {
         return try {
-            val count = counselorRepository.count()
+            val count = characterRepository.count()
             RsData.of(
                 "S-1",
                 "DB 연결 성공",

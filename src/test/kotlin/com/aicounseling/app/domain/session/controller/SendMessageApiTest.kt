@@ -1,8 +1,7 @@
 package com.aicounseling.app.domain.session.controller
 
-import com.aicounseling.app.domain.counselor.repository.CounselorRepository
+import com.aicounseling.app.domain.character.repository.CharacterRepository
 import com.aicounseling.app.domain.session.entity.ChatSession
-import com.aicounseling.app.domain.session.entity.CounselingPhase
 import com.aicounseling.app.domain.session.entity.Message
 import com.aicounseling.app.domain.session.entity.SenderType
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
@@ -44,7 +43,7 @@ class SendMessageApiTest
         objectMapper: ObjectMapper,
         jwtTokenProvider: JwtTokenProvider,
         userRepository: UserRepository,
-        counselorRepository: CounselorRepository,
+        characterRepository: CharacterRepository,
         sessionRepository: ChatSessionRepository,
         messageRepository: MessageRepository,
     ) : ChatSessionControllerBaseTest(
@@ -52,7 +51,7 @@ class SendMessageApiTest
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -88,7 +87,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "상담 세션",
                     ),
                 )
@@ -147,7 +146,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "기존 제목",
                     ),
                 )
@@ -158,7 +157,6 @@ class SendMessageApiTest
                     session = session,
                     content = "이전 메시지",
                     senderType = SenderType.USER,
-                    phase = CounselingPhase.ENGAGEMENT,
                 ),
             )
 
@@ -184,7 +182,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -219,7 +217,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -246,7 +244,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 
@@ -271,7 +269,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         closedAt = java.time.Instant.now(),
                     ),
                 )

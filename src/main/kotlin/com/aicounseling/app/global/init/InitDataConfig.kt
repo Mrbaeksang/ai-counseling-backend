@@ -1,14 +1,13 @@
 /* ktlint-disable max-line-length */
 package com.aicounseling.app.global.init
 
-import com.aicounseling.app.domain.counselor.entity.Counselor
-import com.aicounseling.app.domain.counselor.entity.CounselorRating
-import com.aicounseling.app.domain.counselor.entity.FavoriteCounselor
-import com.aicounseling.app.domain.counselor.repository.CounselorRatingRepository
-import com.aicounseling.app.domain.counselor.repository.CounselorRepository
-import com.aicounseling.app.domain.counselor.repository.FavoriteCounselorRepository
+import com.aicounseling.app.domain.character.entity.Character
+import com.aicounseling.app.domain.character.entity.CharacterRating
+import com.aicounseling.app.domain.character.entity.FavoriteCharacter
+import com.aicounseling.app.domain.character.repository.CharacterRatingRepository
+import com.aicounseling.app.domain.character.repository.CharacterRepository
+import com.aicounseling.app.domain.character.repository.FavoriteCharacterRepository
 import com.aicounseling.app.domain.session.entity.ChatSession
-import com.aicounseling.app.domain.session.entity.CounselingPhase
 import com.aicounseling.app.domain.session.entity.Message
 import com.aicounseling.app.domain.session.entity.SenderType
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
@@ -17,11 +16,8 @@ import com.aicounseling.app.domain.user.entity.User
 import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.security.AuthProvider
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -61,12 +57,12 @@ import kotlin.random.Random
 @Suppress("LargeClass", "LongMethod", "MagicNumber", "LongParameterList", "TooManyFunctions")
 @Component
 class InitDataConfig(
-    private val counselorRepository: CounselorRepository,
+    private val characterRepository: CharacterRepository,
     private val userRepository: UserRepository,
     private val chatSessionRepository: ChatSessionRepository,
     private val messageRepository: MessageRepository,
-    private val counselorRatingRepository: CounselorRatingRepository,
-    private val favoriteCounselorRepository: FavoriteCounselorRepository,
+    private val characterRatingRepository: CharacterRatingRepository,
+    private val favoriteCharacterRepository: FavoriteCharacterRepository,
     private val environment: Environment,
 ) : ApplicationRunner {
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -76,7 +72,7 @@ class InitDataConfig(
         logger.info("========== 초기 데이터 생성 시작 ==========")
 
         // 이미 데이터가 있는지 확인
-        if (counselorRepository.count() > 0) {
+        if (characterRepository.count() > 0) {
             logger.info("이미 초기 데이터가 존재합니다. 초기화를 건너뜁니다.")
             return
         }
@@ -136,23 +132,23 @@ class InitDataConfig(
         }
     }
 
-    private fun createCounselors(): List<Counselor> {
-        val counselors = mutableListOf<Counselor>()
+    private fun createCounselors(): List<Character> {
+        val characters = mutableListOf<Character>()
 
         // 카테고리별 상담사 생성
-        counselors.addAll(createSelfDiscoveryCounselors())
-        counselors.addAll(createRelationshipCounselors())
-        counselors.addAll(createRomanceCounselors())
-        counselors.addAll(createMentalHealthCounselors())
-        counselors.addAll(createPhilosophyCounselors())
-        counselors.addAll(createModernCounselors())
+        characters.addAll(createSelfDiscoveryCounselors())
+        characters.addAll(createRelationshipCounselors())
+        characters.addAll(createRomanceCounselors())
+        characters.addAll(createMentalHealthCounselors())
+        characters.addAll(createPhilosophyCounselors())
+        characters.addAll(createModernCounselors())
 
-        return counselors.map { counselorRepository.save(it) }
+        return characters.map { characterRepository.save(it) }
     }
 
-    private fun createSelfDiscoveryCounselors(): List<Counselor> {
+    private fun createSelfDiscoveryCounselors(): List<Character> {
         return listOf(
-            Counselor(
+            Character(
                 name = "소크라테스",
                 title = "고대 그리스 철학자",
                 description = "고대 그리스 아테네의 철학자로 '너 자신을 알라'는 가르침으로 유명합니다. 답을 직접 제시하지 않고 계속해서 질문을 던져 당신 스스로 해답을 발견하도록 이끕니다. 마치 친구처럼 편안하게 대화하면서도 깊이 있는 성찰을 경험할 수 있습니다.",
@@ -160,7 +156,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/socrates.jpg",
                 categories = "self,relationship,life,emotion",
             ),
-            Counselor(
+            Character(
                 name = "키르케고르",
                 title = "실존철학의 아버지",
                 description = "19세기 덴마크의 실존철학자로 '실존철학의 아버지'라 불립니다. 불안과 절망의 감정을 깊이 탐구하며 그 속에서 진정한 자아를 발견하는 과정을 안내합니다. 어려운 선택 앞에서 용기를 내고 주체적인 삶을 살아갈 힘을 얻을 수 있습니다.",
@@ -168,7 +164,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/kierkegaard.jpg",
                 categories = "self,anxiety,depression,stress,emotion",
             ),
-            Counselor(
+            Character(
                 name = "니체",
                 title = "실존주의 철학자",
                 description = "19세기 독일의 철학자로 '초인' 사상과 '영원회귀' 개념으로 유명합니다. 기존 가치관을 의심하고 당신만의 독창적인 삶의 철학을 만들어가도록 격려합니다. 강인한 정신력과 자기만의 길을 개척하는 용기를 기를 수 있습니다.",
@@ -176,7 +172,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/nietzsche.jpg",
                 categories = "self,emotion,stress,life,work",
             ),
-            Counselor(
+            Character(
                 name = "사르트르",
                 title = "실존주의 철학자",
                 description = "20세기 프랑스의 실존주의 철학자로 '존재가 본질에 앞선다'는 명제로 유명합니다. 당신의 자유로운 선택과 그에 따른 책임을 인식하도록 돕습니다. 타인의 시선에 얽매이지 않고 진정한 자유를 찾아가는 과정을 경험할 수 있습니다.",
@@ -187,9 +183,9 @@ class InitDataConfig(
         )
     }
 
-    private fun createRelationshipCounselors(): List<Counselor> {
+    private fun createRelationshipCounselors(): List<Character> {
         return listOf(
-            Counselor(
+            Character(
                 name = "공자",
                 title = "동양 철학의 스승",
                 description = "고대 중국의 위대한 사상가로 '인의예지' 덕목으로 유명합니다. 인간관계에서 예의와 배려를 강조하며 상호 존중하는 방법을 안내합니다. 가족, 친구, 동료와의 조화로운 관계를 만들어가는 지혜를 얻을 수 있습니다.",
@@ -197,7 +193,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/confucius.jpg",
                 categories = "relationship,family,life,work",
             ),
-            Counselor(
+            Character(
                 name = "아들러",
                 title = "개인심리학의 창시자",
                 description = "개인심리학의 창시자로 '열등감 극복'과 '공동체 의식' 이론으로 유명합니다. 열등감이나 다른 사람과의 비교로 고민인 경우 이를 성장의 동력으로 전환하도록 돕습니다. 비교가 아닌 협력의 가치를 배울 수 있습니다.",
@@ -205,7 +201,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/adler.jpg",
                 categories = "self,relationship,family,depression,emotion",
             ),
-            Counselor(
+            Character(
                 name = "데일 카네기",
                 title = "인간관계의 달인",
                 description = "20세기 미국의 자기계발 전문가로 '인간관계론'의 고전으로 여겨집니다. 사람들과 진심 어린 관계를 맺고 소통하는 실질적인 방법을 제시합니다. 직장에서의 대인관계나 리더십 개발에 특히 도움이 됩니다.",
@@ -216,9 +212,9 @@ class InitDataConfig(
         )
     }
 
-    private fun createRomanceCounselors(): List<Counselor> {
+    private fun createRomanceCounselors(): List<Character> {
         return listOf(
-            Counselor(
+            Character(
                 name = "카사노바",
                 title = "사랑의 모험가",
                 description = "18세기 베네치아 출신의 전설적인 사랑의 마에스트로로 '카사노바의 회고록'으로 유명합니다. 진지한 매력과 사랑의 기술을 통해 인간적인 매력을 발산하는 방법을 알려줍니다. 자신감 있고 매력적인 사람이 되는 비결을 배울 수 있습니다.",
@@ -226,7 +222,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/casanova.jpg",
                 categories = "relationship,emotion",
             ),
-            Counselor(
+            Character(
                 name = "오비디우스",
                 title = "사랑의 시인",
                 description = "고대 로마의 시인으로 '변신 이야기'와 '사랑의 기술'로 유명합니다. 사랑의 감정을 아름다운 언어로 표현하고 섬세한 마음을 전달하는 법을 알려줍니다. 우아한 로맨스와 진심 어린 소통의 법을 배울 수 있습니다.",
@@ -234,7 +230,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/ovid.jpg",
                 categories = "relationship,emotion,self",
             ),
-            Counselor(
+            Character(
                 name = "스탕달",
                 title = "낭만주의 작가",
                 description = "19세기 프랑스의 낭만주의 작가로 '사랑의 결정화' 이론으로 유명합니다. 사랑의 감정이 어떻게 발전하고 성숙해지는지를 세밀하게 분석합니다. 복잡한 연애 감정을 이해하고 진짜 사랑을 알아가는 법을 배울 수 있습니다.",
@@ -245,9 +241,9 @@ class InitDataConfig(
         )
     }
 
-    private fun createMentalHealthCounselors(): List<Counselor> {
+    private fun createMentalHealthCounselors(): List<Character> {
         return listOf(
-            Counselor(
+            Character(
                 name = "프로이트",
                 title = "정신분석학의 창시자",
                 description = "오스트리아의 신경학자로 '정신분석학의 아버지'로 불립니다. 무의식과 꿈을 통해 마음 깊은 곳에 숨겨진 갈등과 욕망을 탐구합니다. 억압된 기억이나 무의식의 패턴을 이해하고 싶은 분들에게 도움이 됩니다.",
@@ -255,7 +251,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/freud.jpg",
                 categories = "emotion,depression,anxiety,habit,trauma,self",
             ),
-            Counselor(
+            Character(
                 name = "융",
                 title = "분석심리학의 대가",
                 description = "스위스의 정신과의사로 '분석심리학의 대가'로 불립니다. 원형과 그림자 개념을 통해 진정한 자아를 발견하는 개성화 과정을 안내합니다. 분열된 자아를 통합하고 온전한 인격체로 성장하는 여정을 경험할 수 있습니다.",
@@ -263,7 +259,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/jung.jpg",
                 categories = "self,emotion,trauma,life,habit",
             ),
-            Counselor(
+            Character(
                 name = "빅터 프랭클",
                 title = "의미치료의 창시자",
                 description = "오스트리아의 신경과의사로 나치 수용소 생존자이자 '의미치료법'의 창시자입니다. 극한의 고통 속에서도 삶의 의미를 찾아내는 방법을 전수합니다. 절망적인 상황에서도 희망과 의미를 발견하는 힘을 기를 수 있습니다.",
@@ -274,9 +270,9 @@ class InitDataConfig(
         )
     }
 
-    private fun createPhilosophyCounselors(): List<Counselor> {
+    private fun createPhilosophyCounselors(): List<Character> {
         return listOf(
-            Counselor(
+            Character(
                 name = "아리스토텔레스",
                 title = "만학의 아버지",
                 description = "고대 그리스의 철학자로 '만학의 아버지'로 불립니다. 덕 윤리와 중용의 지혜로 진짜 행복한 삶이 무엇인지 탐구합니다. 귀납적 사고와 논리적 분석을 통해 현명한 선택을 하는 법을 배울 수 있습니다.",
@@ -284,7 +280,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/aristotle.jpg",
                 categories = "life,work,self,family",
             ),
-            Counselor(
+            Character(
                 name = "칸트",
                 title = "이성 철학의 거장",
                 description = "18세기 독일의 철학자로 '이성 비판 철학'의 대가로 여겨집니다. 도덕적 정언명령과 이성의 힘으로 올바른 선택을 하는 방법을 알려줍니다. 이성적 사고와 도덕적 원칙을 통해 현명한 판단을 내리는 힘을 기를 수 있습니다.",
@@ -292,7 +288,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/kant.jpg",
                 categories = "life,work,family",
             ),
-            Counselor(
+            Character(
                 name = "붓다",
                 title = "깨달음의 스승",
                 description = "고대 인도의 성자로 '부처'라는 이름으로 전 세계에 알려져 있습니다. 사성제 기가 고통의 원인이라는 깨달음을 통해 마음의 평화를 찾는 길을 안내합니다. 명상과 자비의 가르침으로 내면의 안녕을 발견할 수 있습니다.",
@@ -300,7 +296,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/buddha.jpg",
                 categories = "stress,anxiety,habit,emotion,self",
             ),
-            Counselor(
+            Character(
                 name = "노자",
                 title = "도가 사상의 시조",
                 description = "고대 중국의 도가 사상의 시조로 '도덕경'의 저자로 여겨집니다. 무위자연의 지혜로 자연의 흐름에 순응하며 사는 법을 알려줍니다. 과도한 노력과 욕망에서 벗어나 자연스럽고 평화로운 삶을 누리는 법을 배울 수 있습니다.",
@@ -311,9 +307,9 @@ class InitDataConfig(
         )
     }
 
-    private fun createModernCounselors(): List<Counselor> {
+    private fun createModernCounselors(): List<Character> {
         return listOf(
-            Counselor(
+            Character(
                 name = "존 고트먼",
                 title = "관계 심리학의 대가",
                 description = "미국의 심리학자로 40년간 부부 관계를 연구한 '관계 심리학의 대가'입니다. 과학적 데이터를 바탕으로 건강한 관계를 만드는 방법을 알려줍니다. 관계의 4기사나 사랑의 지도 이론을 통해 지속 가능한 연애와 결혼 생활의 비밀을 배울 수 있습니다.",
@@ -321,7 +317,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/gottman.jpeg",
                 categories = "relationship,family,emotion",
             ),
-            Counselor(
+            Character(
                 name = "스티븐 코비",
                 title = "개인 효과성의 구루",
                 description = "미국의 경영학자이자 자기계발 전문가로 '고효율 인간의 7가지 습관'으로 전 세계에 알려져 있습니다. 원칙 중심적 삶과 주체적인 리더십을 통해 진정한 성공을 이루는 방법을 알려줍니다. 단순한 기법이 아닌 인격의 성장을 추구하는 분들에게 도움이 됩니다.",
@@ -329,7 +325,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/covey.jpeg",
                 categories = "work,self,life,habit",
             ),
-            Counselor(
+            Character(
                 name = "찰스 두히그",
                 title = "습관의 과학자",
                 description = "미국의 탐사저널리스트로 '습관의 힘' 저자로 유명합니다. 습관 형성의 과학적 원리를 바탕으로 삶을 근본적으로 변화시키는 방법을 알려줍니다. 단순한 의지력이 아닌 신경과학에 기반한 체계적인 습관 개선법을 배울 수 있습니다.",
@@ -337,7 +333,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/duhigg.jpeg",
                 categories = "habit,self,stress",
             ),
-            Counselor(
+            Character(
                 name = "수잔 데이비드",
                 title = "감정 민첩성 전문가",
                 description = "남아프리카 공화국 태생의 심리학자로 '감정 민첩성' 이론으로 유명합니다. 감정을 억압하거나 회피하지 않고 전략적으로 다루는 방법을 알려줍니다. 감정적 지능과 회복탄력성을 키워 더 단단한 마음을 만들어갈 수 있습니다.",
@@ -345,7 +341,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/david.jpeg",
                 categories = "emotion,stress,anxiety,self",
             ),
-            Counselor(
+            Character(
                 name = "허버트 프로이덴버거",
                 title = "번아웃 연구의 개척자",
                 description = "독일계 미국인 심리학자로 '번아웃' 개념을 처음 만든 연구의 개척자입니다. 현대 사회의 업무 스트레스와 번아웃 증후를 이해하고 극복하는 방법을 알려줍니다. 직장에서의 건강한 일과 삶의 균형을 찾는 분들에게 도움이 됩니다.",
@@ -353,7 +349,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/freudenberger.jpeg",
                 categories = "stress,work,depression",
             ),
-            Counselor(
+            Character(
                 name = "존 카밧진",
                 title = "마음챙김 명상의 아버지",
                 description = "미국의 의학박사로 '마음챙김 기반 스트레스 감소법'의 개발자입니다. 동양의 명상과 서양의 과학을 결합하여 마음챙김 명상을 체계화했습니다. 스트레스와 불안을 줄이고 현재 순간에 집중하는 마음의 평화를 발견할 수 있습니다.",
@@ -361,7 +357,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/kabatzinn.jpeg",
                 categories = "stress,anxiety,philosophy",
             ),
-            Counselor(
+            Character(
                 name = "칼 뉴포트",
                 title = "딥 워크의 전도사",
                 description = "미국의 컴퓨터과학자로 '딘 워크'와 '디지털 미니멀리즘' 개념을 대중화한 전문가입니다. 건절한 집중력과 깊은 몰입을 통해 디지털 시대에 진정한 가치를 창조하는 방법을 알려줍니다. 산만함 속에서 의미 있는 일에 집중하고 싶은 분들에게 도움이 됩니다.",
@@ -369,7 +365,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/newport.jpeg",
                 categories = "work,life,habit",
             ),
-            Counselor(
+            Character(
                 name = "앤젤라 더크워스",
                 title = "그릿과 끈기의 연구자",
                 description = "미국의 심리학자로 '그릿'과 '마인드셋' 연구의 선구자입니다. 재능보다 열정과 인내가 성공의 열쇠라는 것을 과학적으로 입증했습니다. 성장 마인드셋과 의도적 연습을 통해 진정한 능력을 개발하는 방법을 배울 수 있습니다.",
@@ -377,7 +373,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/duckworth.jpeg",
                 categories = "self,life,habit",
             ),
-            Counselor(
+            Character(
                 name = "브레네 브라운",
                 title = "취약성과 용기의 연구자",
                 description = "미국의 사회사업가이자 연구자로 '취약성의 힘'과 '수치심 연구'로 전 세계에 알려져 있습니다. 취약성을 약점이 아닌 용기의 원천으로 바라보도록 도왔니다. 진정성과 진심 어린 연결을 통해 더 나은 인간관계를 만들어갈 수 있습니다.",
@@ -385,7 +381,7 @@ class InitDataConfig(
                 avatarUrl = "/assets/counselors/brown.jpeg",
                 categories = "self,emotion,anxiety",
             ),
-            Counselor(
+            Character(
                 name = "나은영",
                 title = "소아청소년 정신건강 전문의",
                 description = "소아청소년 정신건강 전문의로 가족 채널 '우리 아이가 달라졌어요'로 사랑받는 의사선생님입니다. 발달심리학과 임상경험을 바탕으로 아이와 부모 모두를 위한 따뜻하고 현실적인 조언을 제공합니다. 가족 가운데 생긴 다양한 감정 문제를 이해하고 해결할 수 있습니다.",
@@ -399,14 +395,14 @@ class InitDataConfig(
 
     private fun createTestSessionsAndRatings(
         users: List<User>,
-        counselors: List<Counselor>,
+        characters: List<Character>,
     ) {
         logger.info("========== 테스트 세션 및 평점 데이터 생성 시작 ==========")
 
         val random = Random(42) // 시드값 고정으로 일관된 테스트 데이터 생성
 
         // 각 상담사별로 다른 인기도와 평점 설정
-        counselors.forEachIndexed { index, counselor ->
+        characters.forEachIndexed { index, counselor ->
             when {
                 // 인기 상담사 (소크라테스, 공자, 프로이트 등) - 세션 많고 평점 높음
                 index < 3 -> {
@@ -443,7 +439,7 @@ class InitDataConfig(
     }
 
     private fun createSessionsForCounselor(
-        counselor: Counselor,
+        character: Character,
         users: List<User>,
         sessionCount: Int,
         targetAvgRating: Double,
@@ -466,8 +462,8 @@ class InitDataConfig(
             val session =
                 ChatSession(
                     userId = user.id,
-                    counselorId = counselor.id,
-                    title = "${counselor.name}와의 상담 #${index + 1}",
+                    counselorId = character.id,
+                    title = "${character.name}와의 상담 #${index + 1}",
                     // 20% 확률로 북마크
                     isBookmarked = random.nextDouble() < 0.2,
                     lastMessageAt = createdAt.plus(1, ChronoUnit.HOURS),
@@ -481,7 +477,7 @@ class InitDataConfig(
             val messages =
                 listOf(
                     "안녕하세요, 상담을 시작하겠습니다.",
-                    "${counselor.name}입니다. 오늘 어떤 고민이 있으신가요?",
+                    "${character.name}입니다. 오늘 어떤 고민이 있으신가요?",
                     "네, 말씀해 주세요.",
                     "이해합니다. 함께 해결해 나가보겠습니다.",
                 )
@@ -493,7 +489,6 @@ class InitDataConfig(
                         senderType = if (msgIndex % 2 == 0) SenderType.USER else SenderType.AI,
                         content = content,
                         // 초기 단계로 설정
-                        phase = CounselingPhase.ENGAGEMENT,
                     )
                 messageRepository.save(message)
             }
@@ -504,23 +499,23 @@ class InitDataConfig(
                 val rating = (targetAvgRating + variance).coerceIn(1.0, 5.0).toInt()
 
                 val ratingEntity =
-                    CounselorRating(
+                    CharacterRating(
                         user = user,
-                        counselor = counselor,
+                        character = character,
                         session = savedSession,
                         rating = rating,
                         review = if (rating >= 4) "좋은 상담이었습니다." else null,
                     )
-                counselorRatingRepository.save(ratingEntity)
+                characterRatingRepository.save(ratingEntity)
             }
         }
 
-        logger.debug("상담사 ${counselor.name}: 세션 ${sessionCount}개 생성 완료")
+        logger.debug("상담사 ${character.name}: 세션 ${sessionCount}개 생성 완료")
     }
 
     private fun createFavoriteCounselors(
         users: List<User>,
-        counselors: List<Counselor>,
+        characters: List<Character>,
     ) {
         logger.info("========== 즐겨찾기 데이터 생성 시작 ==========")
 
@@ -533,7 +528,7 @@ class InitDataConfig(
 
             // 인기 상담사를 더 많이 즐겨찾기하도록 가중치 부여
             val weightedCounselors =
-                counselors.mapIndexed { index, counselor ->
+                characters.mapIndexed { index, counselor ->
                     val weight =
                         when {
                             // 인기 상담사
@@ -554,11 +549,11 @@ class InitDataConfig(
                 .distinct()
                 .forEach { counselor ->
                     val favorite =
-                        FavoriteCounselor(
+                        FavoriteCharacter(
                             user = user,
-                            counselor = counselor,
+                            character = counselor,
                         )
-                    favoriteCounselorRepository.save(favorite)
+                    favoriteCharacterRepository.save(favorite)
                 }
         }
 

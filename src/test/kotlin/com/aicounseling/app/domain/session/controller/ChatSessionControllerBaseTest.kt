@@ -1,7 +1,7 @@
 package com.aicounseling.app.domain.session.controller
 
-import com.aicounseling.app.domain.counselor.entity.Counselor
-import com.aicounseling.app.domain.counselor.repository.CounselorRepository
+import com.aicounseling.app.domain.character.entity.Character
+import com.aicounseling.app.domain.character.repository.CharacterRepository
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
 import com.aicounseling.app.domain.user.entity.User
@@ -36,7 +36,7 @@ abstract class ChatSessionControllerBaseTest(
     protected val objectMapper: ObjectMapper,
     protected val jwtTokenProvider: JwtTokenProvider,
     protected val userRepository: UserRepository,
-    protected val counselorRepository: CounselorRepository,
+    protected val characterRepository: CharacterRepository,
     protected val sessionRepository: ChatSessionRepository,
     protected val messageRepository: MessageRepository,
 ) {
@@ -68,7 +68,7 @@ abstract class ChatSessionControllerBaseTest(
     }
 
     protected lateinit var testUser: User
-    protected lateinit var testCounselor: Counselor
+    protected lateinit var testCharacter: Character
     protected lateinit var authToken: String
 
     @BeforeEach
@@ -87,9 +87,9 @@ abstract class ChatSessionControllerBaseTest(
             )
 
         // 테스트 상담사 생성
-        testCounselor =
-            counselorRepository.save(
-                Counselor(
+        testCharacter =
+            characterRepository.save(
+                Character(
                     name = "아리스토텔레스",
                     title = "고대 그리스의 철학자",
                     description = "실용적 윤리학과 행복론의 대가",
@@ -106,7 +106,7 @@ abstract class ChatSessionControllerBaseTest(
     fun cleanupTestData() {
         messageRepository.deleteAll()
         sessionRepository.deleteAll()
-        counselorRepository.deleteAll()
+        characterRepository.deleteAll()
         userRepository.deleteAll()
     }
 }

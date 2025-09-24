@@ -21,9 +21,6 @@ class Message(
     val senderType: SenderType,
     @Column(columnDefinition = "TEXT", nullable = false)
     val content: String,
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    val phase: CounselingPhase,
 ) : BaseEntity()
 
 enum class SenderType {

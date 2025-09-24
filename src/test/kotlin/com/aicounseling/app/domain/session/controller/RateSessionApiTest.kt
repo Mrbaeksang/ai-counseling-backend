@@ -1,7 +1,7 @@
 package com.aicounseling.app.domain.session.controller
 
-import com.aicounseling.app.domain.counselor.dto.RateSessionRequest
-import com.aicounseling.app.domain.counselor.repository.CounselorRatingRepository
+import com.aicounseling.app.domain.character.dto.RateSessionRequest
+import com.aicounseling.app.domain.character.repository.CharacterRatingRepository
 import com.aicounseling.app.domain.session.entity.ChatSession
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
@@ -33,16 +33,16 @@ class RateSessionApiTest
         objectMapper: com.fasterxml.jackson.databind.ObjectMapper,
         jwtTokenProvider: com.aicounseling.app.global.security.JwtTokenProvider,
         userRepository: com.aicounseling.app.domain.user.repository.UserRepository,
-        counselorRepository: com.aicounseling.app.domain.counselor.repository.CounselorRepository,
+        characterRepository: com.aicounseling.app.domain.character.repository.CharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
         messageRepository: com.aicounseling.app.domain.session.repository.MessageRepository,
-        private val ratingRepository: CounselorRatingRepository,
+        private val ratingRepository: CharacterRatingRepository,
     ) : ChatSessionControllerBaseTest(
             mockMvc,
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -85,7 +85,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "평가할 세션",
                         closedAt = Instant.now(),
                     ),
@@ -127,7 +127,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         closedAt = Instant.now(),
                     ),
                 )
@@ -159,7 +159,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "진행중인 세션",
                         // closedAt = null (진행중)
                     ),
@@ -196,7 +196,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "이미 평가한 세션",
                         closedAt = Instant.now(),
                     ),
@@ -204,9 +204,9 @@ class RateSessionApiTest
 
             // 첫 번째 평가 생성
             val firstRating =
-                com.aicounseling.app.domain.counselor.entity.CounselorRating(
+                com.aicounseling.app.domain.character.entity.CharacterRating(
                     user = testUser,
-                    counselor = testCounselor,
+                    character = testCharacter,
                     session = session,
                     // 별 3개
                     rating = 6,

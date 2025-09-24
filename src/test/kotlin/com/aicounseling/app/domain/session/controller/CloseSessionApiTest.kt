@@ -29,7 +29,7 @@ class CloseSessionApiTest
         objectMapper: com.fasterxml.jackson.databind.ObjectMapper,
         jwtTokenProvider: com.aicounseling.app.global.security.JwtTokenProvider,
         userRepository: com.aicounseling.app.domain.user.repository.UserRepository,
-        counselorRepository: com.aicounseling.app.domain.counselor.repository.CounselorRepository,
+        characterRepository: com.aicounseling.app.domain.character.repository.CharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
         messageRepository: com.aicounseling.app.domain.session.repository.MessageRepository,
     ) : ChatSessionControllerBaseTest(
@@ -37,7 +37,7 @@ class CloseSessionApiTest
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -72,7 +72,7 @@ class CloseSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "종료할 세션",
                     ),
                 )
@@ -99,7 +99,7 @@ class CloseSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "이미 종료된 세션",
                         closedAt = Instant.now(),
                     ),
@@ -133,7 +133,7 @@ class CloseSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
 

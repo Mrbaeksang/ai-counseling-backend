@@ -1,6 +1,6 @@
 package com.aicounseling.app.domain.session.controller
 
-import com.aicounseling.app.domain.counselor.dto.RateSessionRequest
+import com.aicounseling.app.domain.character.dto.RateSessionRequest
 import com.aicounseling.app.domain.session.dto.CreateSessionRequest
 import com.aicounseling.app.domain.session.dto.CreateSessionResponse
 import com.aicounseling.app.domain.session.dto.MessageItem
