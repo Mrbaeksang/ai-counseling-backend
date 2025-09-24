@@ -38,19 +38,18 @@ class DebugController(
     data class MessageDebugInfo(
         val id: Long,
         val senderType: String,
-        val phase: String,
         // 처음 100자만
         val contentPreview: String,
         val contentLength: Int,
         val createdAt: String,
     )
 
-    @GetMapping("/sessions/{sessionId}/phase-info")
+    @GetMapping("/sessions/{sessionId}/details")
     @Operation(
-        summary = "세션의 단계 전환 정보 조회",
-        description = "특정 세션의 모든 메시지와 phase 변화를 확인합니다",
+        summary = "세션 디버그 정보 조회",
+        description = "특정 세션의 메시지 목록과 메타데이터를 디버그 용도로 확인합니다",
     )
-    fun getSessionPhaseInfo(
+    fun getSessionDetails(
         @PathVariable sessionId: Long,
     ): RsData<SessionDebugInfo> {
         val session =
@@ -64,7 +63,6 @@ class DebugController(
                 MessageDebugInfo(
                     id = msg.id,
                     senderType = msg.senderType.name,
-                    phase = msg.phase.name,
                     contentPreview =
                         if (msg.content.length > CONTENT_PREVIEW_LENGTH) {
                             msg.content.substring(0, CONTENT_PREVIEW_LENGTH) + "..."
@@ -88,51 +86,6 @@ class DebugController(
 
         return RsData.of("S-1", "세션 디버그 정보 조회 성공", debugInfo)
     }
-
-    @GetMapping("/sessions/{sessionId}/phase-transitions")
-    @Operation(
-        summary = "단계 전환 이력 조회",
-        description = "세션에서 phase가 변경된 지점만 추출하여 보여줍니다",
-    )
-    fun getPhaseTransitions(
-        @PathVariable sessionId: Long,
-    ): RsData<List<PhaseTransition>> {
-        val messages = messageRepository.findBySessionIdOrderByCreatedAtAsc(sessionId)
-
-        val transitions = mutableListOf<PhaseTransition>()
-        var previousPhase: String? = null
-
-        messages.forEach { msg ->
-            val currentPhase = msg.phase.name
-            previousPhase?.let { prevPhase ->
-                if (prevPhase != currentPhase) {
-                    transitions.add(
-                        PhaseTransition(
-                            messageId = msg.id,
-                            fromPhase = prevPhase,
-                            toPhase = currentPhase,
-                            senderType = msg.senderType.name,
-                            messagePreview = msg.content.take(MESSAGE_PREVIEW_LENGTH) + "...",
-                            transitionAt = msg.createdAt.toString(),
-                        ),
-                    )
-                }
-            }
-            previousPhase = currentPhase
-        }
-
-        return RsData.of("S-1", "단계 전환 이력 조회 성공", transitions)
-    }
-
-    data class PhaseTransition(
-        val messageId: Long,
-        val fromPhase: String,
-        val toPhase: String,
-        val senderType: String,
-        val messagePreview: String,
-        val transitionAt: String,
-    )
-
     @GetMapping("/sessions/recent")
     @Operation(
         summary = "최근 세션 목록 조회",
@@ -151,7 +104,6 @@ class DebugController(
                         sessionId = session.id,
                         title = session.title ?: "제목 없음",
                         messageCount = messageCount.toInt(),
-                        lastPhase = lastMessage?.phase?.name ?: "없음",
                         createdAt = session.createdAt.toString(),
                         lastMessageAt = session.lastMessageAt?.toString(),
                     )
@@ -164,7 +116,6 @@ class DebugController(
         val sessionId: Long,
         val title: String,
         val messageCount: Int,
-        val lastPhase: String,
         val createdAt: String,
         val lastMessageAt: String?,
     )

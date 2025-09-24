@@ -30,7 +30,7 @@ class GetUserSessionsApiTest
         objectMapper: com.fasterxml.jackson.databind.ObjectMapper,
         jwtTokenProvider: com.aicounseling.app.global.security.JwtTokenProvider,
         userRepository: com.aicounseling.app.domain.user.repository.UserRepository,
-        counselorRepository: com.aicounseling.app.domain.counselor.repository.CounselorRepository,
+        characterRepository: com.aicounseling.app.domain.character.repository.CharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
         messageRepository: com.aicounseling.app.domain.session.repository.MessageRepository,
     ) : ChatSessionControllerBaseTest(
@@ -38,7 +38,7 @@ class GetUserSessionsApiTest
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -73,7 +73,7 @@ class GetUserSessionsApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                         title = "세션 $i",
                         lastMessageAt = Instant.now().minusSeconds(i.toLong() * 3600),
                     ),
@@ -101,7 +101,7 @@ class GetUserSessionsApiTest
             sessionRepository.save(
                 ChatSession(
                     userId = testUser.id,
-                    counselorId = testCounselor.id,
+                    counselorId = testCharacter.id,
                     title = "북마크 세션 1",
                     isBookmarked = true,
                 ),
@@ -109,7 +109,7 @@ class GetUserSessionsApiTest
             sessionRepository.save(
                 ChatSession(
                     userId = testUser.id,
-                    counselorId = testCounselor.id,
+                    counselorId = testCharacter.id,
                     title = "북마크 세션 2",
                     isBookmarked = true,
                 ),
@@ -117,7 +117,7 @@ class GetUserSessionsApiTest
             sessionRepository.save(
                 ChatSession(
                     userId = testUser.id,
-                    counselorId = testCounselor.id,
+                    counselorId = testCharacter.id,
                     title = "일반 세션",
                     isBookmarked = false,
                 ),
@@ -142,7 +142,7 @@ class GetUserSessionsApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCounselor.id,
+                        counselorId = testCharacter.id,
                     ),
                 )
             }

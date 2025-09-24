@@ -30,7 +30,7 @@ class StartSessionApiTest
         objectMapper: com.fasterxml.jackson.databind.ObjectMapper,
         jwtTokenProvider: com.aicounseling.app.global.security.JwtTokenProvider,
         userRepository: com.aicounseling.app.domain.user.repository.UserRepository,
-        counselorRepository: com.aicounseling.app.domain.counselor.repository.CounselorRepository,
+        characterRepository: com.aicounseling.app.domain.character.repository.CharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
         messageRepository: com.aicounseling.app.domain.session.repository.MessageRepository,
     ) : ChatSessionControllerBaseTest(
@@ -38,7 +38,7 @@ class StartSessionApiTest
             objectMapper,
             jwtTokenProvider,
             userRepository,
-            counselorRepository,
+            characterRepository,
             sessionRepository,
             messageRepository,
         ) {
@@ -69,7 +69,7 @@ class StartSessionApiTest
         @DisplayName("유효한 상담사 ID로 세션을 시작할 수 있다")
         fun `should start session with valid counselor id`() {
             // Given
-            val request = CreateSessionRequest(counselorId = testCounselor.id)
+            val request = CreateSessionRequest(counselorId = testCharacter.id)
 
             // When & Then
             mockMvc.perform(
@@ -82,7 +82,7 @@ class StartSessionApiTest
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
                 .andExpect(jsonPath("$.msg").value("세션 시작 성공"))
                 .andExpect(jsonPath("$.data.sessionId").exists())
-                .andExpect(jsonPath("$.data.counselorName").value(testCounselor.name))
+                .andExpect(jsonPath("$.data.counselorName").value(testCharacter.name))
                 .andExpect(jsonPath("$.data.title").exists())
         }
 
@@ -108,7 +108,7 @@ class StartSessionApiTest
         @DisplayName("인증되지 않은 요청은 401 에러를 반환한다")
         fun `should return 401 for unauthenticated request`() {
             // Given
-            val request = CreateSessionRequest(counselorId = testCounselor.id)
+            val request = CreateSessionRequest(counselorId = testCharacter.id)
 
             // When & Then
             mockMvc.perform(

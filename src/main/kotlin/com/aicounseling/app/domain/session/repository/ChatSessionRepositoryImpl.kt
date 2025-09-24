@@ -1,6 +1,6 @@
 package com.aicounseling.app.domain.session.repository
 
-import com.aicounseling.app.domain.counselor.entity.Counselor
+import com.aicounseling.app.domain.character.entity.Character
 import com.aicounseling.app.domain.session.dto.SessionListResponse
 import com.aicounseling.app.domain.session.entity.ChatSession
 import com.aicounseling.app.global.constants.AppConstants
@@ -35,18 +35,18 @@ class ChatSessionRepositoryImpl(
                         path(ChatSession::title),
                         value(AppConstants.Session.DEFAULT_SESSION_TITLE),
                     ),
-                    path(Counselor::name),
+                    path(Character::name),
                     coalesce(
                         path(ChatSession::lastMessageAt),
                         path(ChatSession::createdAt),
                     ),
                     path(ChatSession::isBookmarked),
-                    path(Counselor::avatarUrl),
+                    path(Character::avatarUrl),
                     path(ChatSession::closedAt),
                 ).from(
                     entity(ChatSession::class),
-                    join(Counselor::class).on(
-                        path(ChatSession::counselorId).eq(path(Counselor::id)),
+                    join(Character::class).on(
+                        path(ChatSession::counselorId).eq(path(Character::id)),
                     ),
                 ).where(
                     and(
