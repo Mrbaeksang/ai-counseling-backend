@@ -1,6 +1,7 @@
 package com.aicounseling.app.domain.session.dto
 
 import com.aicounseling.app.domain.session.entity.Message
+import java.time.Instant
 
 /**
  * 메시지 아이템 DTO
@@ -10,15 +11,19 @@ import com.aicounseling.app.domain.session.entity.Message
  * - senderType: 발신자 구분 (USER/AI)
  */
 data class MessageItem(
+    val messageId: Long,
     val content: String,
     // "USER" or "AI"
     val senderType: String,
+    val createdAt: Instant,
 ) {
     companion object {
         fun from(message: Message): MessageItem {
             return MessageItem(
+                messageId = message.id,
                 content = message.content,
                 senderType = message.senderType.name,
+                createdAt = message.createdAt,
             )
         }
     }

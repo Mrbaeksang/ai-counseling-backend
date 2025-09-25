@@ -526,10 +526,8 @@ paths:
   /sessions/{sessionId}/messages/{messageId}/report:
     post:
       tags: [reports]
-      summary: 메시지 신고 접수 (준비중)
-      description: |
-        Google Play 안전 정책 충족을 위해 도입 예정인 신고 API입니다.
-        2025 Q4 베타 출시를 목표로 하며, 현재는 문서화 단계입니다.
+      summary: 메시지 신고
+      description: 특정 세션 내 메시지에 대해 스팸/혐오 등 사유로 신고를 접수합니다.
       security:
         - bearerAuth: []
       parameters:
@@ -550,8 +548,8 @@ paths:
             schema:
               $ref: '#/components/schemas/MessageReportRequest'
       responses:
-        '202':
-          description: 신고 접수 완료 (비동기 처리 예정)
+        '200':
+          description: 신고가 정상 접수됨
           content:
             application/json:
               schema:
@@ -1025,16 +1023,28 @@ components:
     MessageItem:
       type: object
       properties:
+        messageId:
+          type: integer
+          format: int64
         content:
           type: string
         senderType:
           type: string
           enum: [USER, AI]
+        createdAt:
+          type: string
+          format: date-time
     SendMessageResponse:
       type: object
       properties:
+        userMessageId:
+          type: integer
+          format: int64
         userMessage:
           type: string
+        aiMessageId:
+          type: integer
+          format: int64
         aiMessage:
           type: string
         sessionTitle:
@@ -1080,23 +1090,31 @@ components:
         reasonCode:
           type: string
           description: 신고 사유 코드
-          enum: [harassment, self_harm, hate_speech, misinformation, spam, other]
+          enum: [HARASSMENT, SELF_HARM, HATE_SPEECH, MISINFORMATION, SPAM, OTHER]
         detail:
           type: string
           maxLength: 2000
           nullable: true
           description: 추가 설명 (선택)
-    MessageReportReceipt:
+    MessageReportResponse:
       type: object
       properties:
         reportId:
           type: integer
           format: int64
-        status:
+        sessionId:
+          type: integer
+          format: int64
+        messageId:
+          type: integer
+          format: int64
+        reasonCode:
           type: string
-          example: PENDING
-          description: 초기 처리 상태
-        receivedAt:
+          enum: [HARASSMENT, SELF_HARM, HATE_SPEECH, MISINFORMATION, SPAM, OTHER]
+        detail:
+          type: string
+          nullable: true
+        createdAt:
           type: string
           format: date-time
     RsDataMessageReport:
@@ -1104,12 +1122,12 @@ components:
       properties:
         resultCode:
           type: string
-          example: S-202
+          example: S-1
         msg:
           type: string
-          example: 신고가 접수되었습니다
+          example: 메시지 신고가 접수되었습니다
         data:
-          $ref: '#/components/schemas/MessageReportReceipt'
+          $ref: '#/components/schemas/MessageReportResponse'
     RateSessionRequest:
       type: object
       required: [rating]
