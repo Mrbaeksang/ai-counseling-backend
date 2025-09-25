@@ -25,7 +25,7 @@ class ChatSessionCacheService(
         isClosed: Boolean?,
         pageable: Pageable,
     ): Page<SessionListResponse> {
-        return sessionRepository.findSessionsWithCounselor(userId, bookmarked, isClosed, pageable)
+        return sessionRepository.findSessionsWithCharacter(userId, bookmarked, isClosed, pageable)
     }
 
     @Cacheable(

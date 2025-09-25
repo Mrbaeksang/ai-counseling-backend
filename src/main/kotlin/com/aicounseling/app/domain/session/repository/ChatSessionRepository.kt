@@ -11,5 +11,5 @@ interface ChatSessionRepository : JpaRepository<ChatSession, Long>, ChatSessionR
         userId: Long,
     ): ChatSession?
 
-    fun countByCounselorId(characterId: Long): Long
+    fun countByCharacterId(characterId: Long): Long
 }

@@ -45,9 +45,9 @@ class SecurityConfig(
                     // OAuth2 endpoints
                     .requestMatchers("/oauth2/**").permitAll()
                     .requestMatchers("/login/oauth2/**").permitAll()
-                    // Public counselor endpoints (목록, 상세 조회는 인증 불필요)
-                    .requestMatchers(HttpMethod.GET, "/api/counselors").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/counselors/*").permitAll()
+                    // Public character endpoints (목록, 상세 조회는 인증 불필요)
+                    .requestMatchers(HttpMethod.GET, "/api/characters").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/characters/*").permitAll()
                     // Protected endpoints (나머지 /api/** 는 인증 필요)
                     .requestMatchers("/api/**").authenticated()
                     .anyRequest().permitAll()

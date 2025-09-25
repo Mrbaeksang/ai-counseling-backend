@@ -19,7 +19,7 @@ import org.springframework.data.domain.Pageable
 class ChatSessionRepositoryImpl(
     private val kotlinJdslJpqlExecutor: KotlinJdslJpqlExecutor,
 ) : ChatSessionRepositoryCustom {
-    override fun findSessionsWithCounselor(
+    override fun findSessionsWithCharacter(
         userId: Long,
         bookmarked: Boolean?,
         isClosed: Boolean?,

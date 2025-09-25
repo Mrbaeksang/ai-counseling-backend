@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable
  */
 interface ChatSessionRepositoryCustom {
     /**
-     * 사용자의 세션 목록을 Counselor 정보와 함께 조회 (N+1 문제 해결)
+     * 사용자의 세션 목록을 Character 정보와 함께 조회 (N+1 문제 해결)
      *
      * @param userId 사용자 ID
      * @param bookmarked 북마크 필터 (null이면 전체, true면 북마크만)
@@ -19,7 +19,7 @@ interface ChatSessionRepositoryCustom {
      * @param pageable 페이징 정보
      * @return 세션 목록 DTO Page
      */
-    fun findSessionsWithCounselor(
+    fun findSessionsWithCharacter(
         userId: Long,
         bookmarked: Boolean?,
         isClosed: Boolean?,
