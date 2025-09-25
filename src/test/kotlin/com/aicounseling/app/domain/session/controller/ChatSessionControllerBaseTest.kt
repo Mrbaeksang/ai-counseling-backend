@@ -4,6 +4,7 @@ import com.aicounseling.app.domain.character.entity.Character
 import com.aicounseling.app.domain.character.repository.CharacterRepository
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
+import com.aicounseling.app.domain.session.report.repository.MessageReportRepository
 import com.aicounseling.app.domain.user.entity.User
 import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.security.AuthProvider
@@ -39,6 +40,7 @@ abstract class ChatSessionControllerBaseTest(
     protected val characterRepository: CharacterRepository,
     protected val sessionRepository: ChatSessionRepository,
     protected val messageRepository: MessageRepository,
+    protected val messageReportRepository: MessageReportRepository,
 ) {
     @MockkBean(relaxed = true)
     protected lateinit var chatClient: ChatClient
@@ -104,6 +106,7 @@ abstract class ChatSessionControllerBaseTest(
 
     @AfterEach
     fun cleanupTestData() {
+        messageReportRepository.deleteAll()
         messageRepository.deleteAll()
         sessionRepository.deleteAll()
         characterRepository.deleteAll()

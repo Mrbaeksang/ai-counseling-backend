@@ -6,6 +6,7 @@ import com.aicounseling.app.domain.session.entity.Message
 import com.aicounseling.app.domain.session.entity.SenderType
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
+import com.aicounseling.app.domain.session.report.repository.MessageReportRepository
 import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.security.JwtTokenProvider
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -46,6 +47,7 @@ class SendMessageApiTest
         characterRepository: CharacterRepository,
         sessionRepository: ChatSessionRepository,
         messageRepository: MessageRepository,
+        messageReportRepository: MessageReportRepository,
     ) : ChatSessionControllerBaseTest(
             mockMvc,
             objectMapper,
@@ -54,6 +56,7 @@ class SendMessageApiTest
             characterRepository,
             sessionRepository,
             messageRepository,
+            messageReportRepository,
         ) {
         companion object {
             private val dotenv =
@@ -113,7 +116,9 @@ class SendMessageApiTest
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.resultCode").value("S-1"))
                     .andExpect(jsonPath("$.msg").value("메시지 전송 성공"))
+                    .andExpect(jsonPath("$.data.userMessageId").exists())
                     .andExpect(jsonPath("$.data.userMessage").value(userMessageContent))
+                    .andExpect(jsonPath("$.data.aiMessageId").exists())
                     .andExpect(jsonPath("$.data.aiMessage").exists()) // AI 응답이 있는지만 확인
                     .andReturn()
 

@@ -6,6 +6,7 @@ import com.aicounseling.app.domain.session.entity.Message
 import com.aicounseling.app.domain.session.entity.SenderType
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
+import com.aicounseling.app.domain.session.report.repository.MessageReportRepository
 import com.aicounseling.app.domain.user.repository.UserRepository
 import com.aicounseling.app.global.security.JwtTokenProvider
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -42,6 +43,7 @@ class GetSessionMessagesApiTest
         characterRepository: CharacterRepository,
         sessionRepository: ChatSessionRepository,
         messageRepository: MessageRepository,
+        messageReportRepository: MessageReportRepository,
     ) : ChatSessionControllerBaseTest(
             mockMvc,
             objectMapper,
@@ -50,6 +52,7 @@ class GetSessionMessagesApiTest
             characterRepository,
             sessionRepository,
             messageRepository,
+            messageReportRepository,
         ) {
         companion object {
             private val dotenv =
@@ -134,11 +137,15 @@ class GetSessionMessagesApiTest
                 .andExpect(jsonPath("$.data.content").isArray)
                 .andExpect(jsonPath("$.data.content.length()").value(4))
                 // 첫 번째 메시지 검증
+                .andExpect(jsonPath("$.data.content[0].messageId").value(messages[0].id.toInt()))
                 .andExpect(jsonPath("$.data.content[0].content").value(messages[0].content))
                 .andExpect(jsonPath("$.data.content[0].senderType").value("USER"))
+                .andExpect(jsonPath("$.data.content[0].createdAt").exists())
                 // 두 번째 메시지 검증
+                .andExpect(jsonPath("$.data.content[1].messageId").value(messages[1].id.toInt()))
                 .andExpect(jsonPath("$.data.content[1].content").value(messages[1].content))
                 .andExpect(jsonPath("$.data.content[1].senderType").value("AI"))
+                .andExpect(jsonPath("$.data.content[1].createdAt").exists())
                 // 나머지 메시지 검증
                 .andExpect(jsonPath("$.data.content[2].content").value(messages[2].content))
                 .andExpect(jsonPath("$.data.content[3].content").value(messages[3].content))
@@ -180,6 +187,7 @@ class GetSessionMessagesApiTest
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
                 .andExpect(jsonPath("$.data.content.length()").value(10))
+                .andExpect(jsonPath("$.data.content[0].messageId").exists())
                 .andExpect(jsonPath("$.data.content[0].content").value("메시지 1"))
                 .andExpect(jsonPath("$.data.content[9].content").value("메시지 10"))
 
@@ -193,6 +201,7 @@ class GetSessionMessagesApiTest
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
                 .andExpect(jsonPath("$.data.content.length()").value(5))
+                .andExpect(jsonPath("$.data.content[0].messageId").exists())
                 .andExpect(jsonPath("$.data.content[0].content").value("메시지 11"))
                 .andExpect(jsonPath("$.data.content[4].content").value("메시지 15"))
         }

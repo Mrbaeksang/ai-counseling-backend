@@ -97,5 +97,7 @@ object AppConstants {
         const val AI_RESPONSE_ERROR = "AI 응답을 가져오는데 실패했습니다. 잠시 후 다시 시도해주세요."
         const val SESSION_CANNOT_RATE_ACTIVE = "진행 중인 세션은 평가할 수 없습니다"
         const val MESSAGE_CONTENT_EMPTY = "메시지 내용을 입력해주세요"
+        const val MESSAGE_NOT_FOUND = "메시지를 찾을 수 없습니다"
+        const val MESSAGE_ALREADY_REPORTED = "이미 신고한 메시지입니다"
     }
 }

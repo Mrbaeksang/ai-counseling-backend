@@ -8,6 +8,9 @@ import com.aicounseling.app.domain.session.dto.SendMessageRequest
 import com.aicounseling.app.domain.session.dto.SendMessageResponse
 import com.aicounseling.app.domain.session.dto.SessionListResponse
 import com.aicounseling.app.domain.session.dto.UpdateSessionTitleRequest
+import com.aicounseling.app.domain.session.report.dto.MessageReportRequest
+import com.aicounseling.app.domain.session.report.dto.MessageReportResponse
+import com.aicounseling.app.domain.session.report.service.MessageReportService
 import com.aicounseling.app.domain.session.service.ChatSessionService
 import com.aicounseling.app.global.constants.AppConstants
 import com.aicounseling.app.global.pagination.PageUtils
@@ -46,6 +49,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/sessions")
 class ChatSessionController(
     private val sessionService: ChatSessionService,
+    private val messageReportService: MessageReportService,
     private val rq: Rq,
 ) {
     /**
@@ -164,7 +168,30 @@ class ChatSessionController(
     }
 
     /**
-     * 5. POST /sessions/{id}/messages - 메시지 전송 (AI 응답 포함)
+     * 5. POST /sessions/{sessionId}/messages/{messageId}/report - 메시지 신고
+     */
+    @Operation(summary = "메시지 신고")
+    @PostMapping("/{sessionId}/messages/{messageId}/report")
+    fun reportMessage(
+        @PathVariable sessionId: Long,
+        @PathVariable messageId: Long,
+        @Valid @RequestBody request: MessageReportRequest,
+    ): RsData<MessageReportResponse> {
+        val userId =
+            rq.currentUserId
+                ?: return RsData.of("F-401", "로그인이 필요합니다", null)
+
+        val report = messageReportService.submitReport(userId, sessionId, messageId, request)
+
+        return RsData.of(
+            "S-1",
+            "메시지 신고가 접수되었습니다",
+            report,
+        )
+    }
+
+    /**
+     * 6. POST /sessions/{id}/messages - 메시지 전송 (AI 응답 포함)
      */
     @Operation(summary = "메시지 전송 (AI 응답 포함)")
     @PostMapping("/{sessionId}/messages")
@@ -188,7 +215,9 @@ class ChatSessionController(
             "S-1",
             "메시지 전송 성공",
             SendMessageResponse(
+                userMessageId = userMessage.id,
                 userMessage = userMessage.content,
+                aiMessageId = aiMessage.id,
                 aiMessage = aiMessage.content,
                 sessionTitle = if (session.title != AppConstants.Session.DEFAULT_SESSION_TITLE) session.title else null,
                 isSessionEnded = session.closedAt != null,

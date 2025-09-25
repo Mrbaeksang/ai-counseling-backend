@@ -33,6 +33,7 @@ class GetUserSessionsApiTest
         characterRepository: com.aicounseling.app.domain.character.repository.CharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
         messageRepository: com.aicounseling.app.domain.session.repository.MessageRepository,
+        messageReportRepository: com.aicounseling.app.domain.session.report.repository.MessageReportRepository,
     ) : ChatSessionControllerBaseTest(
             mockMvc,
             objectMapper,
@@ -41,6 +42,7 @@ class GetUserSessionsApiTest
             characterRepository,
             sessionRepository,
             messageRepository,
+            messageReportRepository,
         ) {
         companion object {
             private val dotenv =

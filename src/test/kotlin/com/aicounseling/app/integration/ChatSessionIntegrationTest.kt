@@ -142,7 +142,9 @@ class ChatSessionIntegrationTest
                     .andExpect(status().isOk)
                     .andExpect(jsonPath("$.resultCode").value("S-1"))
                     .andExpect(jsonPath("$.msg").value("메시지 전송 성공"))
+                    .andExpect(jsonPath("$.data.userMessageId").exists())
                     .andExpect(jsonPath("$.data.userMessage").exists())
+                    .andExpect(jsonPath("$.data.aiMessageId").exists())
                     .andExpect(jsonPath("$.data.aiMessage").exists())
                     .andReturn()
 

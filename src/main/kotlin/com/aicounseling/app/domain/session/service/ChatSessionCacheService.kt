@@ -37,13 +37,7 @@ class ChatSessionCacheService(
         pageable: Pageable,
     ): Page<MessageItem> {
         val messages = messageRepository.findBySessionId(sessionId, pageable)
-        val content =
-            messages.content.map { message ->
-                MessageItem(
-                    content = message.content,
-                    senderType = message.senderType.name,
-                )
-            }
+        val content = messages.content.map(MessageItem::from)
         return PageImpl(content, messages.pageable, messages.totalElements)
     }
 
