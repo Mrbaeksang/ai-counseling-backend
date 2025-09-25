@@ -45,7 +45,7 @@ class AddFavoriteApiTest
         ) {
         @Test
         @DisplayName("성공: 새로운 즐겨찾기 추가")
-        fun addFavorite_withValidCounselor_createsNewFavorite() {
+        fun addFavorite_withValidCharacter_createsNewFavorite() {
             // given: 즐겨찾기 추가 전 확인
             val favorites = favoriteCharacterRepository.findAll()
             assert(favorites.isEmpty())
@@ -114,7 +114,7 @@ class AddFavoriteApiTest
 
         @Test
         @DisplayName("실패: 존재하지 않는 캐릭터 즐겨찾기 시도")
-        fun addFavorite_withInvalidCounselor_returns404() {
+        fun addFavorite_withInvalidCharacter_returns404() {
             // when & then
             mockMvc.perform(
                 post("/api/characters/99999/favorite")
@@ -128,7 +128,7 @@ class AddFavoriteApiTest
 
         @Test
         @DisplayName("실패: 비활성 캐릭터 즐겨찾기 시도")
-        fun addFavorite_withInactiveCounselor_returns404() {
+        fun addFavorite_withInactiveCharacter_returns404() {
             // when & then
             mockMvc.perform(
                 post("/api/characters/${testCharacter3.id}/favorite")

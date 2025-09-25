@@ -69,7 +69,7 @@ object AppConstants {
 
     object Cache {
         const val USER_CACHE_TTL = 3600L // 1 hour
-        const val COUNSELOR_CACHE_TTL = 7200L // 2 hours
+        const val CHARACTER_CACHE_TTL = 7200L // 2 hours
         const val SESSION_CACHE_TTL = 1800L // 30 minutes
     }
 
@@ -83,7 +83,7 @@ object AppConstants {
 
     object ErrorMessages {
         const val USER_NOT_FOUND = "사용자를 찾을 수 없습니다"
-        const val COUNSELOR_NOT_FOUND = "캐릭터를 찾을 수 없습니다"
+        const val CHARACTER_NOT_FOUND = "캐릭터를 찾을 수 없습니다"
         const val SESSION_NOT_FOUND = "세션을 찾을 수 없습니다"
         const val UNAUTHORIZED = "인증이 필요합니다"
         const val FORBIDDEN = "권한이 없습니다"

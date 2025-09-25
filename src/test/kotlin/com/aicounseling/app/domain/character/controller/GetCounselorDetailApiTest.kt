@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 @ActiveProfiles("test")
 @Transactional
 @DisplayName("GET /api/characters/{id} - 캐릭터 상세 정보 조회")
-class GetCounselorDetailApiTest
+class GetCharacterDetailApiTest
     @Autowired
     constructor(
         mockMvc: MockMvc,
@@ -44,7 +44,7 @@ class GetCounselorDetailApiTest
         ) {
         @Test
         @DisplayName("성공: 활성 캐릭터의 상세 정보 조회")
-        fun getCounselorDetail_withValidId_returnsDetail() {
+        fun getCharacterDetail_withValidId_returnsDetail() {
             // given: 평가 데이터와 즐겨찾기 생성
             createTestSessionWithRating(testUser, testCharacter1, 8)
             createTestSessionWithRating(testUser2, testCharacter1, 10)
@@ -71,7 +71,7 @@ class GetCounselorDetailApiTest
 
         @Test
         @DisplayName("성공: 즐겨찾기하지 않은 캐릭터 조회")
-        fun getCounselorDetail_withoutFavorite_returnsFalseIsFavorite() {
+        fun getCharacterDetail_withoutFavorite_returnsFalseIsFavorite() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/${testCharacter2.id}")
@@ -85,7 +85,7 @@ class GetCounselorDetailApiTest
 
         @Test
         @DisplayName("성공: 평가가 없는 캐릭터 조회")
-        fun getCounselorDetail_withoutRatings_returnsZeroRating() {
+        fun getCharacterDetail_withoutRatings_returnsZeroRating() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/${testCharacter2.id}")
@@ -99,7 +99,7 @@ class GetCounselorDetailApiTest
 
         @Test
         @DisplayName("실패: 존재하지 않는 캐릭터 ID")
-        fun getCounselorDetail_withInvalidId_returns404() {
+        fun getCharacterDetail_withInvalidId_returns404() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/99999")
@@ -112,7 +112,7 @@ class GetCounselorDetailApiTest
 
         @Test
         @DisplayName("실패: 비활성 캐릭터 조회")
-        fun getCounselorDetail_withInactiveCounselor_returns404() {
+        fun getCharacterDetail_withInactiveCharacter_returns404() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/${testCharacter3.id}")
@@ -125,7 +125,7 @@ class GetCounselorDetailApiTest
 
         @Test
         @DisplayName("성공: 인증 없이도 조회 가능 (즐겨찾기 정보 없음)")
-        fun getCounselorDetail_withoutAuth_returnsSuccessWithoutFavorite() {
+        fun getCharacterDetail_withoutAuth_returnsSuccessWithoutFavorite() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/${testCharacter1.id}"),

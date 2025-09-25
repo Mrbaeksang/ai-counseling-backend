@@ -16,7 +16,7 @@ data class SessionListResponse(
     val sessionId: Long,
     val characterId: Long,
     val title: String,
-    val counselorName: String,
+    val characterName: String,
     val lastMessageAt: Instant,
     val isBookmarked: Boolean,
     val avatarUrl: String? = null,

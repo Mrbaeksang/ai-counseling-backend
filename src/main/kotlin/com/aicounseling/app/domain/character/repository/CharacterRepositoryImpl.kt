@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable
 import kotlin.math.roundToInt
 
 /**
- * Counselor 커스텀 레포지토리 구현체
+ * Character 커스텀 레포지토리 구현체
  *
  * JDSL을 사용하여 복잡한 쿼리를 타입 세이프하게 구현
  * N+1 문제를 방지하기 위해 LEFT JOIN 활용
@@ -36,9 +36,9 @@ class CharacterRepositoryImpl(
             }
 
         // 2단계: 각 캐릭터의 통계 정보 계산 (N+1 쿼리 문제 있지만 현재 JDSL 제약상 불가피)
-        val counselorStats =
-            characters.mapNotNull { counselor ->
-                counselor?.let {
+        val characterStats =
+            characters.mapNotNull { character ->
+                character?.let {
                     // 평균 평점 계산
                     val avgRatingResult =
                         kotlinJdslJpqlExecutor.findAll {
@@ -59,7 +59,7 @@ class CharacterRepositoryImpl(
                         }
                     val sessionCount = sessionCountResult.firstOrNull() as? Long ?: 0L
 
-                    CounselorWithStats(
+                    CharacterWithStats(
                         character = it,
                         averageRating = avgRating,
                         totalSessions = sessionCount,
@@ -70,10 +70,10 @@ class CharacterRepositoryImpl(
         // 3단계: 메모리에서 정렬 (sort 파라미터에 따라)
         val sortedStats =
             when (sort) {
-                "rating" -> counselorStats.sortedByDescending { it.averageRating }
-                "popular" -> counselorStats.sortedByDescending { it.totalSessions }
-                "recent" -> counselorStats.sortedByDescending { it.character.createdAt }
-                else -> counselorStats.sortedByDescending { it.character.createdAt } // 기본값: 최신순 (생성일 내림차순)
+                "rating" -> characterStats.sortedByDescending { it.averageRating }
+                "popular" -> characterStats.sortedByDescending { it.totalSessions }
+                "recent" -> characterStats.sortedByDescending { it.character.createdAt }
+                else -> characterStats.sortedByDescending { it.character.createdAt } // 기본값: 최신순 (생성일 내림차순)
             }
 
         // 4단계: 페이징 처리
@@ -111,7 +111,7 @@ class CharacterRepositoryImpl(
     }
 
     override fun findCharacterDetailById(characterId: Long): CharacterDetailResponse? {
-        // Counselor 조회
+        // Character 조회
         val character =
             kotlinJdslJpqlExecutor.findAll {
                 select(entity(Character::class))
@@ -134,7 +134,7 @@ class CharacterRepositoryImpl(
                     )
             }.firstOrNull() ?: 0L
 
-        // 평균 평점 계산 - counselor 관계를 통해 접근
+        // 평균 평점 계산 - character 관계를 통해 접근
         val avgRating =
             kotlinJdslJpqlExecutor.findAll {
                 select(avg(path(CharacterRating::rating)))
@@ -144,7 +144,7 @@ class CharacterRepositoryImpl(
                     )
             }.firstOrNull() ?: 0.0
 
-        // 평점 수 카운트 - counselor 관계를 통해 접근
+        // 평점 수 카운트 - character 관계를 통해 접근
         val ratingCount =
             kotlinJdslJpqlExecutor.findAll {
                 select(count(entity(CharacterRating::class)))
@@ -173,7 +173,7 @@ class CharacterRepositoryImpl(
 /**
  * 캐릭터와 통계 정보를 함께 담는 내부 클래스
  */
-private data class CounselorWithStats(
+private data class CharacterWithStats(
     val character: Character,
     val averageRating: Double,
     val totalSessions: Long,

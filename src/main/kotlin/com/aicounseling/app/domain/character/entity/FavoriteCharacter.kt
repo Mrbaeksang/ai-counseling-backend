@@ -29,7 +29,7 @@ class FavoriteCharacter(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
-    // LAZY 로딩: counselor 정보도 필요할 때만 조회
+    // LAZY 로딩: character 정보도 필요할 때만 조회
     // EAGER로 하면 매번 JOIN 발생해서 성능 저하
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "character_id", nullable = false)

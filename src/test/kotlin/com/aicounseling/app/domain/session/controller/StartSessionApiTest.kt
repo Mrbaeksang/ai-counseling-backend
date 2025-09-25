@@ -69,7 +69,7 @@ class StartSessionApiTest
 
         @Test
         @DisplayName("유효한 캐릭터 ID로 세션을 시작할 수 있다")
-        fun `should start session with valid counselor id`() {
+        fun `should start session with valid character id`() {
             // Given
             val request = CreateSessionRequest(characterId = testCharacter.id)
 
@@ -84,13 +84,13 @@ class StartSessionApiTest
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
                 .andExpect(jsonPath("$.msg").value("세션 시작 성공"))
                 .andExpect(jsonPath("$.data.sessionId").exists())
-                .andExpect(jsonPath("$.data.counselorName").value(testCharacter.name))
+                .andExpect(jsonPath("$.data.characterName").value(testCharacter.name))
                 .andExpect(jsonPath("$.data.title").exists())
         }
 
         @Test
         @DisplayName("존재하지 않는 캐릭터 ID로는 세션을 시작할 수 없다")
-        fun `should fail with invalid counselor id`() {
+        fun `should fail with invalid character id`() {
             // Given
             val request = CreateSessionRequest(characterId = 99999L)
 

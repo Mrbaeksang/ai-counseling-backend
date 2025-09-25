@@ -40,7 +40,7 @@ class HealthController(
                 "S-1",
                 "DB 연결 성공",
                 mapOf(
-                    "counselorCount" to count,
+                    "characterCount" to count,
                     "dbStatus" to "connected",
                 ),
             )

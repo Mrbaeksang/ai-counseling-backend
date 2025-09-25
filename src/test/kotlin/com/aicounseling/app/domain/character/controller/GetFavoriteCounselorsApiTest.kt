@@ -141,7 +141,7 @@ class GetFavoriteCharactersApiTest
 
         @Test
         @DisplayName("성공: 비활성 캐릭터는 즐겨찾기 목록에서 제외")
-        fun getFavoriteCharacters_withInactiveCounselor_excludesInactive() {
+        fun getFavoriteCharacters_withInactiveCharacter_excludesInactive() {
             // given: 활성 및 비활성 캐릭터 즐겨찾기
             createFavoriteCharacter(testUser, testCharacter1)
             createFavoriteCharacter(testUser, testCharacter3) // 니체는 비활성

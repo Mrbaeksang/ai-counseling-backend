@@ -89,8 +89,8 @@ class UserService(
      * CASCADE 설정으로 연관 데이터 자동 삭제:
      * - chat_sessions
      * - messages
-     * - user_favorite_counselors
-     * - counselor_ratings
+     * - user_favorite_characters
+     * - character_ratings
      *
      * @param userId 탈퇴할 사용자 ID
      * @throws NoSuchElementException 사용자를 찾을 수 없을 때

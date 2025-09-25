@@ -21,16 +21,16 @@ import java.time.Duration
 
 private const val DEFAULT_CACHE_TTL_MINUTES = 10L
 private const val USER_CACHE_TTL_HOURS = 6L
-private const val COUNSELOR_LIST_CACHE_TTL_MINUTES = 5L
-private const val COUNSELOR_DETAIL_CACHE_TTL_MINUTES = 10L
+private const val CHARACTER_LIST_CACHE_TTL_MINUTES = 5L
+private const val CHARACTER_DETAIL_CACHE_TTL_MINUTES = 10L
 private const val USER_SESSION_CACHE_TTL_SECONDS = 60L
 private const val SESSION_MESSAGES_CACHE_TTL_SECONDS = 30L
 private const val OAUTH_TOKEN_CACHE_TTL_SECONDS = 60L
 
 private val DEFAULT_CACHE_TTL = Duration.ofMinutes(DEFAULT_CACHE_TTL_MINUTES)
 private val USER_CACHE_TTL = Duration.ofHours(USER_CACHE_TTL_HOURS)
-private val COUNSELOR_LIST_CACHE_TTL = Duration.ofMinutes(COUNSELOR_LIST_CACHE_TTL_MINUTES)
-private val COUNSELOR_DETAIL_CACHE_TTL = Duration.ofMinutes(COUNSELOR_DETAIL_CACHE_TTL_MINUTES)
+private val CHARACTER_LIST_CACHE_TTL = Duration.ofMinutes(CHARACTER_LIST_CACHE_TTL_MINUTES)
+private val CHARACTER_DETAIL_CACHE_TTL = Duration.ofMinutes(CHARACTER_DETAIL_CACHE_TTL_MINUTES)
 private val USER_SESSION_CACHE_TTL = Duration.ofSeconds(USER_SESSION_CACHE_TTL_SECONDS)
 private val SESSION_MESSAGES_CACHE_TTL = Duration.ofSeconds(SESSION_MESSAGES_CACHE_TTL_SECONDS)
 private val OAUTH_TOKEN_CACHE_TTL = Duration.ofSeconds(OAUTH_TOKEN_CACHE_TTL_SECONDS)
@@ -85,8 +85,8 @@ class CacheConfig(
         val cacheConfigurations =
             mapOf(
                 "user" to defaultConfig.entryTtl(USER_CACHE_TTL),
-                "character:list" to defaultConfig.entryTtl(COUNSELOR_LIST_CACHE_TTL),
-                "character:detail" to defaultConfig.entryTtl(COUNSELOR_DETAIL_CACHE_TTL),
+                "character:list" to defaultConfig.entryTtl(CHARACTER_LIST_CACHE_TTL),
+                "character:detail" to defaultConfig.entryTtl(CHARACTER_DETAIL_CACHE_TTL),
                 "user-sessions" to defaultConfig.entryTtl(USER_SESSION_CACHE_TTL),
                 "session-messages" to defaultConfig.entryTtl(SESSION_MESSAGES_CACHE_TTL),
                 "oauth:google-token" to defaultConfig.entryTtl(OAUTH_TOKEN_CACHE_TTL),

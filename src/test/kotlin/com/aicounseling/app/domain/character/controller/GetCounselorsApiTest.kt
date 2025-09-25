@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 @ActiveProfiles("test")
 @Transactional
 @DisplayName("GET /api/characters - 캐릭터 목록 조회")
-class GetCounselorsApiTest
+class GetCharactersApiTest
     @Autowired
     constructor(
         mockMvc: MockMvc,
@@ -44,7 +44,7 @@ class GetCounselorsApiTest
         ) {
         @Test
         @DisplayName("성공: 인증된 사용자가 활성 캐릭터 목록 조회")
-        fun getCounselors_withAuth_returnsActiveCounselors() {
+        fun getCharacters_withAuth_returnsActiveCharacters() {
             // given: 평가 데이터 생성
             createTestSessionWithRating(testUser, testCharacter1, 8)
             createTestSessionWithRating(testUser2, testCharacter1, 10)
@@ -74,7 +74,7 @@ class GetCounselorsApiTest
 
         @Test
         @DisplayName("성공: 페이징 파라미터 적용")
-        fun getCounselors_withPaging_returnsPagedResult() {
+        fun getCharacters_withPaging_returnsPagedResult() {
             // when & then
             mockMvc.perform(
                 get("/api/characters")
@@ -92,7 +92,7 @@ class GetCounselorsApiTest
 
         @Test
         @DisplayName("성공: 정렬 파라미터 적용")
-        fun getCounselors_withSortParam_returnsSortedResult() {
+        fun getCharacters_withSortParam_returnsSortedResult() {
             // when & then
             mockMvc.perform(
                 get("/api/characters")
@@ -106,7 +106,7 @@ class GetCounselorsApiTest
 
         @Test
         @DisplayName("성공: 평가 데이터가 없어도 캐릭터 목록 조회 가능")
-        fun getCounselors_withoutRatings_returnsAllActiveCounselors() {
+        fun getCharacters_withoutRatings_returnsAllActiveCharacters() {
             // when & then
             mockMvc.perform(
                 get("/api/characters")
@@ -121,7 +121,7 @@ class GetCounselorsApiTest
 
         @Test
         @DisplayName("성공: 인증 없이도 조회 가능")
-        fun getCounselors_withoutAuth_returnsPublicData() {
+        fun getCharacters_withoutAuth_returnsPublicData() {
             // when & then
             mockMvc.perform(
                 get("/api/characters"),

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 /**
- * Counselor 커스텀 레포지토리 인터페이스
+ * Character 커스텀 레포지토리 인터페이스
  *
  * JDSL을 사용한 복잡한 쿼리 처리를 위한 커스텀 메서드 정의
  * - 평균 평점 계산

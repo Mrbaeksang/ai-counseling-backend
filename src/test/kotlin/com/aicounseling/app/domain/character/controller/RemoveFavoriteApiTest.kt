@@ -124,7 +124,7 @@ class RemoveFavoriteApiTest
 
         @Test
         @DisplayName("실패: 존재하지 않는 캐릭터 즐겨찾기 삭제 시도")
-        fun removeFavorite_withInvalidCounselor_returns404() {
+        fun removeFavorite_withInvalidCharacter_returns404() {
             // when & then
             mockMvc.perform(
                 delete("/api/characters/99999/favorite")
@@ -137,7 +137,7 @@ class RemoveFavoriteApiTest
 
         @Test
         @DisplayName("실패: 비활성 캐릭터 즐겨찾기 삭제 시도")
-        fun removeFavorite_withInactiveCounselor_returns404() {
+        fun removeFavorite_withInactiveCharacter_returns404() {
             // when & then
             mockMvc.perform(
                 delete("/api/characters/${testCharacter3.id}/favorite")

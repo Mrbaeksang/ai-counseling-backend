@@ -55,7 +55,7 @@ class ChatSessionService(
         pageable: Pageable,
     ): Page<SessionListResponse> {
         // Custom Repository 메서드를 사용하여 N+1 문제 해결
-        // 한 번의 쿼리로 Session과 Counselor 정보를 함께 조회
+        // 한 번의 쿼리로 Session과 Character 정보를 함께 조회
         return chatSessionCacheService.getUserSessions(userId, bookmarked, isClosed, pageable)
     }
 
@@ -85,7 +85,7 @@ class ChatSessionService(
         return CreateSessionResponse(
             sessionId = savedSession.id,
             characterId = characterId,
-            counselorName = character.name,
+            characterName = character.name,
             title = savedSession.title ?: AppConstants.Session.DEFAULT_SESSION_TITLE,
             avatarUrl = character.avatarUrl,
         )
