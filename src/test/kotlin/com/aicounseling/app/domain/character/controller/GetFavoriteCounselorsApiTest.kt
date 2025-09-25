@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 @ActiveProfiles("test")
 @Transactional
 @DisplayName("GET /api/characters/favorites - 즐겨찾기 캐릭터 목록 조회")
-class GetFavoriteCounselorsApiTest
+class GetFavoriteCharactersApiTest
     @Autowired
     constructor(
         mockMvc: MockMvc,
@@ -44,7 +44,7 @@ class GetFavoriteCounselorsApiTest
         ) {
         @Test
         @DisplayName("성공: 즐겨찾기 캐릭터 목록 조회")
-        fun getFavoriteCounselors_withFavorites_returnsList() {
+        fun getFavoriteCharacters_withFavorites_returnsList() {
             // given: 즐겨찾기와 평가 데이터 생성
             createFavoriteCharacter(testUser, testCharacter1)
             createFavoriteCharacter(testUser, testCharacter2)
@@ -77,7 +77,7 @@ class GetFavoriteCounselorsApiTest
 
         @Test
         @DisplayName("성공: 즐겨찾기가 없는 경우 빈 목록 반환")
-        fun getFavoriteCounselors_withoutFavorites_returnsEmpty() {
+        fun getFavoriteCharacters_withoutFavorites_returnsEmpty() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/favorites")
@@ -93,7 +93,7 @@ class GetFavoriteCounselorsApiTest
 
         @Test
         @DisplayName("성공: 페이징 파라미터 적용")
-        fun getFavoriteCounselors_withPaging_returnsPagedResult() {
+        fun getFavoriteCharacters_withPaging_returnsPagedResult() {
             // given: 여러 즐겨찾기 생성
             createFavoriteCharacter(testUser, testCharacter1)
             createFavoriteCharacter(testUser, testCharacter2)
@@ -115,7 +115,7 @@ class GetFavoriteCounselorsApiTest
 
         @Test
         @DisplayName("성공: 다른 사용자의 즐겨찾기는 조회되지 않음")
-        fun getFavoriteCounselors_withOtherUserFavorites_returnsOnlyOwn() {
+        fun getFavoriteCharacters_withOtherUserFavorites_returnsOnlyOwn() {
             // given: 각 사용자별 즐겨찾기
             createFavoriteCharacter(testUser, testCharacter1)
             createFavoriteCharacter(testUser2, testCharacter2)
@@ -141,7 +141,7 @@ class GetFavoriteCounselorsApiTest
 
         @Test
         @DisplayName("성공: 비활성 캐릭터는 즐겨찾기 목록에서 제외")
-        fun getFavoriteCounselors_withInactiveCounselor_excludesInactive() {
+        fun getFavoriteCharacters_withInactiveCounselor_excludesInactive() {
             // given: 활성 및 비활성 캐릭터 즐겨찾기
             createFavoriteCharacter(testUser, testCharacter1)
             createFavoriteCharacter(testUser, testCharacter3) // 니체는 비활성
@@ -158,7 +158,7 @@ class GetFavoriteCounselorsApiTest
 
         @Test
         @DisplayName("실패: 인증 없이 요청")
-        fun getFavoriteCounselors_withoutAuth_returns401() {
+        fun getFavoriteCharacters_withoutAuth_returns401() {
             // when & then
             mockMvc.perform(
                 get("/api/characters/favorites"),

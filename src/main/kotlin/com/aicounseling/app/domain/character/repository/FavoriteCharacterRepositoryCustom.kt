@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 /**
- * FavoriteCounselor 커스텀 레포지토리 인터페이스
+ * FavoriteCharacter 커스텀 레포지토리 인터페이스
  *
  * 즐겨찾기 캐릭터 조회 시 N+1 문제를 해결하기 위한 최적화된 쿼리 제공
  */

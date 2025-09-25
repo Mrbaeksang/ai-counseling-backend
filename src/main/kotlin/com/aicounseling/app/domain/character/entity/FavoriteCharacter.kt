@@ -10,7 +10,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 
 /**
- * FavoriteCounselor 엔티티 - 사용자의 캐릭터 즐겨찾기
+ * FavoriteCharacter 엔티티 - 사용자의 캐릭터 즐겨찾기
  *
  * N:N 관계를 중간 테이블로 구현
  * - 한 사용자는 여러 캐릭터를 즐겨찾기 가능

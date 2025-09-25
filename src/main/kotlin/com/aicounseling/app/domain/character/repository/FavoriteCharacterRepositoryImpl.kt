@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable
 import kotlin.math.roundToInt
 
 /**
- * FavoriteCounselor 커스텀 레포지토리 구현체
+ * FavoriteCharacter 커스텀 레포지토리 구현체
  *
  * JDSL을 사용하여 즐겨찾기 캐릭터 목록을 평균 평점과 함께 조회
  */
@@ -25,7 +25,7 @@ class FavoriteCharacterRepositoryImpl(
         // selectNew 패턴으로 임시 결과 생성
         val result =
             kotlinJdslJpqlExecutor.findPage(pageable) {
-                selectNew<TempFavoriteCounselorResult>(
+                selectNew<TempFavoriteCharacterResult>(
                     path(Character::id),
                     path(Character::name),
                     path(Character::title),
@@ -66,7 +66,7 @@ class FavoriteCharacterRepositoryImpl(
 
         // 임시 결과를 최종 DTO로 변환 (타입 변환 처리)
         return result.map { temp ->
-            requireNotNull(temp) { "TempFavoriteCounselorResult should not be null" }
+            requireNotNull(temp) { "TempFavoriteCharacterResult should not be null" }
             FavoriteCharacterResponse(
                 id = temp.id,
                 name = temp.name,
@@ -83,7 +83,7 @@ class FavoriteCharacterRepositoryImpl(
  * JDSL selectNew용 임시 결과 클래스
  * Double 타입으로 받아서 나중에 Int로 변환
  */
-data class TempFavoriteCounselorResult(
+data class TempFavoriteCharacterResult(
     val id: Long,
     val name: String,
     val title: String,

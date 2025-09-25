@@ -136,17 +136,17 @@ class InitDataConfig(
         val characters = mutableListOf<Character>()
 
         // 카테고리별 캐릭터 생성
-        characters.addAll(createSelfDiscoveryCounselors())
-        characters.addAll(createRelationshipCounselors())
-        characters.addAll(createRomanceCounselors())
-        characters.addAll(createMentalHealthCounselors())
-        characters.addAll(createPhilosophyCounselors())
-        characters.addAll(createModernCounselors())
+        characters.addAll(createSelfDiscoveryCharacters())
+        characters.addAll(createRelationshipCharacters())
+        characters.addAll(createRomanceCharacters())
+        characters.addAll(createMentalHealthCharacters())
+        characters.addAll(createPhilosophyCharacters())
+        characters.addAll(createModernCharacters())
 
         return characters.map { characterRepository.save(it) }
     }
 
-    private fun createSelfDiscoveryCounselors(): List<Character> {
+    private fun createSelfDiscoveryCharacters(): List<Character> {
         return listOf(
             Character(
                 name = "소크라테스",
@@ -183,7 +183,7 @@ class InitDataConfig(
         )
     }
 
-    private fun createRelationshipCounselors(): List<Character> {
+    private fun createRelationshipCharacters(): List<Character> {
         return listOf(
             Character(
                 name = "공자",
@@ -212,7 +212,7 @@ class InitDataConfig(
         )
     }
 
-    private fun createRomanceCounselors(): List<Character> {
+    private fun createRomanceCharacters(): List<Character> {
         return listOf(
             Character(
                 name = "카사노바",
@@ -241,7 +241,7 @@ class InitDataConfig(
         )
     }
 
-    private fun createMentalHealthCounselors(): List<Character> {
+    private fun createMentalHealthCharacters(): List<Character> {
         return listOf(
             Character(
                 name = "프로이트",
@@ -270,7 +270,7 @@ class InitDataConfig(
         )
     }
 
-    private fun createPhilosophyCounselors(): List<Character> {
+    private fun createPhilosophyCharacters(): List<Character> {
         return listOf(
             Character(
                 name = "아리스토텔레스",
@@ -307,7 +307,7 @@ class InitDataConfig(
         )
     }
 
-    private fun createModernCounselors(): List<Character> {
+    private fun createModernCharacters(): List<Character> {
         return listOf(
             Character(
                 name = "존 고트먼",
@@ -513,7 +513,7 @@ class InitDataConfig(
         logger.debug("캐릭터 ${character.name}: 세션 ${sessionCount}개 생성 완료")
     }
 
-    private fun createFavoriteCounselors(
+    private fun createFavoriteCharacters(
         users: List<User>,
         characters: List<Character>,
     ) {

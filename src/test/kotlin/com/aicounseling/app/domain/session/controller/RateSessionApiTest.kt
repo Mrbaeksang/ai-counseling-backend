@@ -73,7 +73,7 @@ class RateSessionApiTest
 
         @AfterEach
         override fun cleanupTestData() {
-            // CounselorRating 먼저 삭제 (세션 참조하므로)
+            // CharacterRating 먼저 삭제 (세션 참조하므로)
             ratingRepository.deleteAll()
             // 그 다음 부모 클래스의 cleanup 호출
             super.cleanupTestData()

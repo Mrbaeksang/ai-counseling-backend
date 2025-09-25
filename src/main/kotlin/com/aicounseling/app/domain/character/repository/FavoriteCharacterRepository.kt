@@ -6,7 +6,7 @@ import com.aicounseling.app.domain.user.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 
 /**
- * FavoriteCounselorRepository - 즐겨찾기 관리
+ * FavoriteCharacterRepository - 즐겨찾기 관리
  *
  * 핵심 기능:
  * - 즐겨찾기 토글 (exists 체크 → save/delete)

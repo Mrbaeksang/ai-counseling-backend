@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * CounselorService - 캐릭터 관련 비즈니스 로직
+ * CharacterService - 캐릭터 관련 비즈니스 로직
  *
  * 주요 기능:
  * - 캐릭터 목록 조회 (정렬, 페이징)
