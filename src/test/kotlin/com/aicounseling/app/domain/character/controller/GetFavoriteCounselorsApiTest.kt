@@ -13,14 +13,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * GET /api/counselors/favorites API 테스트
- * 즐겨찾기 상담사 목록 조회 기능 검증
+ * GET /api/characters/favorites API 테스트
+ * 즐겨찾기 캐릭터 목록 조회 기능 검증
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@DisplayName("GET /api/counselors/favorites - 즐겨찾기 상담사 목록 조회")
+@DisplayName("GET /api/characters/favorites - 즐겨찾기 캐릭터 목록 조회")
 class GetFavoriteCounselorsApiTest
     @Autowired
     constructor(
@@ -32,7 +32,7 @@ class GetFavoriteCounselorsApiTest
         characterRatingRepository: com.aicounseling.app.domain.character.repository.CharacterRatingRepository,
         favoriteCharacterRepository: com.aicounseling.app.domain.character.repository.FavoriteCharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
-    ) : CounselorControllerBaseTest(
+    ) : CharacterControllerBaseTest(
             mockMvc,
             objectMapper,
             jwtTokenProvider,
@@ -43,18 +43,18 @@ class GetFavoriteCounselorsApiTest
             sessionRepository,
         ) {
         @Test
-        @DisplayName("성공: 즐겨찾기 상담사 목록 조회")
+        @DisplayName("성공: 즐겨찾기 캐릭터 목록 조회")
         fun getFavoriteCounselors_withFavorites_returnsList() {
             // given: 즐겨찾기와 평가 데이터 생성
-            createFavoriteCounselor(testUser, testCharacter1)
-            createFavoriteCounselor(testUser, testCharacter2)
+            createFavoriteCharacter(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter2)
             createTestSessionWithRating(testUser, testCharacter1, 9)
             createTestSessionWithRating(testUser2, testCharacter1, 7)
             createTestSessionWithRating(testUser, testCharacter2, 10)
 
             // when & then
             mockMvc.perform(
-                get("/api/counselors/favorites")
+                get("/api/characters/favorites")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -80,7 +80,7 @@ class GetFavoriteCounselorsApiTest
         fun getFavoriteCounselors_withoutFavorites_returnsEmpty() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/favorites")
+                get("/api/characters/favorites")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -95,12 +95,12 @@ class GetFavoriteCounselorsApiTest
         @DisplayName("성공: 페이징 파라미터 적용")
         fun getFavoriteCounselors_withPaging_returnsPagedResult() {
             // given: 여러 즐겨찾기 생성
-            createFavoriteCounselor(testUser, testCharacter1)
-            createFavoriteCounselor(testUser, testCharacter2)
+            createFavoriteCharacter(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter2)
 
             // when & then
             mockMvc.perform(
-                get("/api/counselors/favorites")
+                get("/api/characters/favorites")
                     .header("Authorization", "Bearer $authToken")
                     .param("page", "1")
                     .param("size", "1"),
@@ -117,12 +117,12 @@ class GetFavoriteCounselorsApiTest
         @DisplayName("성공: 다른 사용자의 즐겨찾기는 조회되지 않음")
         fun getFavoriteCounselors_withOtherUserFavorites_returnsOnlyOwn() {
             // given: 각 사용자별 즐겨찾기
-            createFavoriteCounselor(testUser, testCharacter1)
-            createFavoriteCounselor(testUser2, testCharacter2)
+            createFavoriteCharacter(testUser, testCharacter1)
+            createFavoriteCharacter(testUser2, testCharacter2)
 
             // when & then: testUser는 자신의 즐겨찾기만 조회
             mockMvc.perform(
-                get("/api/counselors/favorites")
+                get("/api/characters/favorites")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -131,7 +131,7 @@ class GetFavoriteCounselorsApiTest
 
             // when & then: testUser2는 자신의 즐겨찾기만 조회
             mockMvc.perform(
-                get("/api/counselors/favorites")
+                get("/api/characters/favorites")
                     .header("Authorization", "Bearer $authToken2"),
             )
                 .andExpect(status().isOk)
@@ -140,15 +140,15 @@ class GetFavoriteCounselorsApiTest
         }
 
         @Test
-        @DisplayName("성공: 비활성 상담사는 즐겨찾기 목록에서 제외")
+        @DisplayName("성공: 비활성 캐릭터는 즐겨찾기 목록에서 제외")
         fun getFavoriteCounselors_withInactiveCounselor_excludesInactive() {
-            // given: 활성 및 비활성 상담사 즐겨찾기
-            createFavoriteCounselor(testUser, testCharacter1)
-            createFavoriteCounselor(testUser, testCharacter3) // 니체는 비활성
+            // given: 활성 및 비활성 캐릭터 즐겨찾기
+            createFavoriteCharacter(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter3) // 니체는 비활성
 
             // when & then
             mockMvc.perform(
-                get("/api/counselors/favorites")
+                get("/api/characters/favorites")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -161,7 +161,7 @@ class GetFavoriteCounselorsApiTest
         fun getFavoriteCounselors_withoutAuth_returns401() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/favorites"),
+                get("/api/characters/favorites"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-401"))

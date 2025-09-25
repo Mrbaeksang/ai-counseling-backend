@@ -74,7 +74,7 @@ class CloseSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "종료할 세션",
                     ),
                 )
@@ -101,7 +101,7 @@ class CloseSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "이미 종료된 세션",
                         closedAt = Instant.now(),
                     ),
@@ -135,7 +135,7 @@ class CloseSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 

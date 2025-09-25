@@ -10,11 +10,11 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 
 /**
- * FavoriteCounselor 엔티티 - 사용자의 상담사 즐겨찾기
+ * FavoriteCounselor 엔티티 - 사용자의 캐릭터 즐겨찾기
  *
  * N:N 관계를 중간 테이블로 구현
- * - 한 사용자는 여러 상담사를 즐겨찾기 가능
- * - 한 상담사는 여러 사용자에게 즐겨찾기 될 수 있음
+ * - 한 사용자는 여러 캐릭터를 즐겨찾기 가능
+ * - 한 캐릭터는 여러 사용자에게 즐겨찾기 될 수 있음
  */
 @Entity
 @Table(

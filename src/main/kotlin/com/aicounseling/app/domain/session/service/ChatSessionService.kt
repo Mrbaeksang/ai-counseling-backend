@@ -61,33 +61,33 @@ class ChatSessionService(
 
     /**
      * 새로운 상담 세션 시작
-     * @param counselorId 상담사 ID
+     * @param characterId 캐릭터 ID
      * @return 생성된 세션 응답 DTO
      */
     @CacheEvict(cacheNames = ["user-sessions"], allEntries = true)
     fun startSession(
         userId: Long,
-        counselorId: Long,
+        characterId: Long,
     ): CreateSessionResponse {
-        // 상담사 존재 여부 확인
-        val counselor =
-            characterService.findById(counselorId)
-                ?: throw IllegalArgumentException("상담사를 찾을 수 없습니다: $counselorId")
+        // 캐릭터 존재 여부 확인
+        val character =
+            characterService.findById(characterId)
+                ?: throw IllegalArgumentException("캐릭터를 찾을 수 없습니다: $characterId")
         // 세션 생성
         val session =
             ChatSession(
                 userId = userId,
-                counselorId = counselorId,
+                characterId = characterId,
             )
         val savedSession = sessionRepository.save(session)
 
         // DTO 변환 및 반환
         return CreateSessionResponse(
             sessionId = savedSession.id,
-            counselorId = counselorId,
-            counselorName = counselor.name,
+            characterId = characterId,
+            counselorName = character.name,
             title = savedSession.title ?: AppConstants.Session.DEFAULT_SESSION_TITLE,
-            avatarUrl = counselor.avatarUrl,
+            avatarUrl = character.avatarUrl,
         )
     }
 
@@ -117,7 +117,7 @@ class ChatSessionService(
     }
 
     /**
-     * 종료된 세션에 대한 상담사 평가
+     * 종료된 세션에 대한 캐릭터 평가
      * @param sessionId 평가할 세션 ID
      * @param request 평가 요청 (rating 1-10, feedback)
      * @return 평가 결과 (RsData)
@@ -145,7 +145,7 @@ class ChatSessionService(
         return characterService.addRating(
             sessionId = sessionId,
             userId = userId,
-            counselorId = session.counselorId,
+            characterId = session.characterId,
             session = session,
             request = request,
         )
@@ -255,8 +255,8 @@ class ChatSessionService(
         val userMessage = saveUserMessage(session, content)
 
         val character =
-            characterService.findById(session.counselorId)
-                ?: error("캐릭터를 찾을 수 없습니다: ${session.counselorId}")
+            characterService.findById(session.characterId)
+                ?: error("캐릭터를 찾을 수 없습니다: ${session.characterId}")
 
         val conversationSummary = summarizeConversation(sessionId)
         val systemPrompt = buildSystemPrompt(

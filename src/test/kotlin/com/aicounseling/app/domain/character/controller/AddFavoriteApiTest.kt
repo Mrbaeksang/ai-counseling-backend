@@ -14,14 +14,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * POST /api/counselors/{id}/favorite API 테스트
- * 상담사 즐겨찾기 추가 기능 검증
+ * POST /api/characters/{id}/favorite API 테스트
+ * 캐릭터 즐겨찾기 추가 기능 검증
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@DisplayName("POST /api/counselors/{id}/favorite - 상담사 즐겨찾기 추가")
+@DisplayName("POST /api/characters/{id}/favorite - 캐릭터 즐겨찾기 추가")
 class AddFavoriteApiTest
     @Autowired
     constructor(
@@ -33,7 +33,7 @@ class AddFavoriteApiTest
         characterRatingRepository: com.aicounseling.app.domain.character.repository.CharacterRatingRepository,
         favoriteCharacterRepository: com.aicounseling.app.domain.character.repository.FavoriteCharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
-    ) : CounselorControllerBaseTest(
+    ) : CharacterControllerBaseTest(
             mockMvc,
             objectMapper,
             jwtTokenProvider,
@@ -52,7 +52,7 @@ class AddFavoriteApiTest
 
             // when & then
             mockMvc.perform(
-                post("/api/counselors/${testCharacter1.id}/favorite")
+                post("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken")
                     .contentType(MediaType.APPLICATION_JSON),
             )
@@ -69,20 +69,20 @@ class AddFavoriteApiTest
         }
 
         @Test
-        @DisplayName("성공: 이미 즐겨찾기된 상담사 중복 추가 시도")
+        @DisplayName("성공: 이미 즐겨찾기된 캐릭터 중복 추가 시도")
         fun addFavorite_withExistingFavorite_returnsAlreadyExists() {
             // given: 이미 즐겨찾기 추가
-            createFavoriteCounselor(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter1)
 
             // when & then
             mockMvc.perform(
-                post("/api/counselors/${testCharacter1.id}/favorite")
+                post("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken")
                     .contentType(MediaType.APPLICATION_JSON),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-409"))
-                .andExpect(jsonPath("$.msg").value("이미 즐겨찾기한 상담사입니다"))
+                .andExpect(jsonPath("$.msg").value("이미 즐겨찾기한 캐릭터입니다"))
 
             // then: 중복 추가되지 않음 확인
             val favorites = favoriteCharacterRepository.findAll()
@@ -90,14 +90,14 @@ class AddFavoriteApiTest
         }
 
         @Test
-        @DisplayName("성공: 다른 사용자가 같은 상담사 즐겨찾기 가능")
+        @DisplayName("성공: 다른 사용자가 같은 캐릭터 즐겨찾기 가능")
         fun addFavorite_withDifferentUser_createsSeperateFavorite() {
             // given: testUser가 먼저 즐겨찾기
-            createFavoriteCounselor(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter1)
 
-            // when & then: testUser2도 같은 상담사 즐겨찾기
+            // when & then: testUser2도 같은 캐릭터 즐겨찾기
             mockMvc.perform(
-                post("/api/counselors/${testCharacter1.id}/favorite")
+                post("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken2")
                     .contentType(MediaType.APPLICATION_JSON),
             )
@@ -113,31 +113,31 @@ class AddFavoriteApiTest
         }
 
         @Test
-        @DisplayName("실패: 존재하지 않는 상담사 즐겨찾기 시도")
+        @DisplayName("실패: 존재하지 않는 캐릭터 즐겨찾기 시도")
         fun addFavorite_withInvalidCounselor_returns404() {
             // when & then
             mockMvc.perform(
-                post("/api/counselors/99999/favorite")
+                post("/api/characters/99999/favorite")
                     .header("Authorization", "Bearer $authToken")
                     .contentType(MediaType.APPLICATION_JSON),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-404"))
-                .andExpect(jsonPath("$.msg").value("상담사를 찾을 수 없습니다"))
+                .andExpect(jsonPath("$.msg").value("캐릭터를 찾을 수 없습니다"))
         }
 
         @Test
-        @DisplayName("실패: 비활성 상담사 즐겨찾기 시도")
+        @DisplayName("실패: 비활성 캐릭터 즐겨찾기 시도")
         fun addFavorite_withInactiveCounselor_returns404() {
             // when & then
             mockMvc.perform(
-                post("/api/counselors/${testCharacter3.id}/favorite")
+                post("/api/characters/${testCharacter3.id}/favorite")
                     .header("Authorization", "Bearer $authToken")
                     .contentType(MediaType.APPLICATION_JSON),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-400"))
-                .andExpect(jsonPath("$.msg").value("비활성화된 상담사입니다"))
+                .andExpect(jsonPath("$.msg").value("비활성화된 캐릭터입니다"))
         }
 
         @Test
@@ -145,7 +145,7 @@ class AddFavoriteApiTest
         fun addFavorite_withoutAuth_returns401() {
             // when & then
             mockMvc.perform(
-                post("/api/counselors/${testCharacter1.id}/favorite")
+                post("/api/characters/${testCharacter1.id}/favorite")
                     .contentType(MediaType.APPLICATION_JSON),
             )
                 .andExpect(status().isUnauthorized)

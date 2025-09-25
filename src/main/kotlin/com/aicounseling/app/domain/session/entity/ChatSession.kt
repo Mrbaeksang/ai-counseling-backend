@@ -15,8 +15,8 @@ import java.time.Instant
 class ChatSession(
     @Column(name = "user_id", nullable = false)
     val userId: Long,
-    @Column(name = "counselor_id", nullable = false)
-    val counselorId: Long,
+    @Column(name = "character_id", nullable = false)
+    val characterId: Long,
     @Column(nullable = true, length = 100)
     var title: String? = null,
     @Column(name = "is_bookmarked", nullable = false)

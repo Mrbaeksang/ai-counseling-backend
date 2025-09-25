@@ -90,7 +90,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "상담 세션",
                     ),
                 )
@@ -151,7 +151,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "기존 제목",
                     ),
                 )
@@ -187,7 +187,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -222,7 +222,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -249,7 +249,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -274,7 +274,7 @@ class SendMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         closedAt = java.time.Instant.now(),
                     ),
                 )

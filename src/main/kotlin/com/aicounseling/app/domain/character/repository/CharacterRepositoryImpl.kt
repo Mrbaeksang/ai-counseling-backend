@@ -22,12 +22,12 @@ import kotlin.math.roundToInt
 class CharacterRepositoryImpl(
     private val kotlinJdslJpqlExecutor: KotlinJdslJpqlExecutor,
 ) : CharacterRepositoryCustom {
-    override fun findCounselorsWithStats(
+    override fun findCharactersWithStats(
         sort: String,
         pageable: Pageable,
     ): Page<CharacterListResponse> {
         // 메모리 정렬 방식으로 변경 (JDSL의 GROUP BY + ORDER BY 제약으로 인해)
-        // 1단계: 활성 상담사 전체 조회
+        // 1단계: 활성 캐릭터 전체 조회
         val characters =
             kotlinJdslJpqlExecutor.findAll {
                 select(entity(Character::class))
@@ -35,7 +35,7 @@ class CharacterRepositoryImpl(
                     .where(path(Character::isActive).eq(true))
             }
 
-        // 2단계: 각 상담사의 통계 정보 계산 (N+1 쿼리 문제 있지만 현재 JDSL 제약상 불가피)
+        // 2단계: 각 캐릭터의 통계 정보 계산 (N+1 쿼리 문제 있지만 현재 JDSL 제약상 불가피)
         val counselorStats =
             characters.mapNotNull { counselor ->
                 counselor?.let {
@@ -55,7 +55,7 @@ class CharacterRepositoryImpl(
                         kotlinJdslJpqlExecutor.findAll {
                             select(count(entity(ChatSession::class)))
                                 .from(entity(ChatSession::class))
-                                .where(path(ChatSession::counselorId).eq(it.id))
+                                .where(path(ChatSession::characterId).eq(it.id))
                         }
                     val sessionCount = sessionCountResult.firstOrNull() as? Long ?: 0L
 
@@ -110,7 +110,7 @@ class CharacterRepositoryImpl(
         )
     }
 
-    override fun findCounselorDetailById(counselorId: Long): CharacterDetailResponse? {
+    override fun findCharacterDetailById(characterId: Long): CharacterDetailResponse? {
         // Counselor 조회
         val character =
             kotlinJdslJpqlExecutor.findAll {
@@ -118,7 +118,7 @@ class CharacterRepositoryImpl(
                     .from(entity(Character::class))
                     .where(
                         and(
-                            path(Character::id).eq(counselorId),
+                            path(Character::id).eq(characterId),
                             path(Character::isActive).eq(true),
                         ),
                     )
@@ -130,7 +130,7 @@ class CharacterRepositoryImpl(
                 select(count(entity(ChatSession::class)))
                     .from(entity(ChatSession::class))
                     .where(
-                        path(ChatSession::counselorId).eq(counselorId),
+                        path(ChatSession::characterId).eq(characterId),
                     )
             }.firstOrNull() ?: 0L
 
@@ -140,7 +140,7 @@ class CharacterRepositoryImpl(
                 select(avg(path(CharacterRating::rating)))
                     .from(entity(CharacterRating::class))
                     .where(
-                        path(CharacterRating::character).path(Character::id).eq(counselorId),
+                        path(CharacterRating::character).path(Character::id).eq(characterId),
                     )
             }.firstOrNull() ?: 0.0
 
@@ -150,7 +150,7 @@ class CharacterRepositoryImpl(
                 select(count(entity(CharacterRating::class)))
                     .from(entity(CharacterRating::class))
                     .where(
-                        path(CharacterRating::character).path(Character::id).eq(counselorId),
+                        path(CharacterRating::character).path(Character::id).eq(characterId),
                     )
             }.firstOrNull() ?: 0L
 
@@ -171,7 +171,7 @@ class CharacterRepositoryImpl(
 }
 
 /**
- * 상담사와 통계 정보를 함께 담는 내부 클래스
+ * 캐릭터와 통계 정보를 함께 담는 내부 클래스
  */
 private data class CounselorWithStats(
     val character: Character,

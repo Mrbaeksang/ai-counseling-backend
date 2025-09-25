@@ -12,7 +12,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 
 /**
- * CounselorRating 엔티티 - 상담사 평가
+ * CounselorRating 엔티티 - 캐릭터 평가
  * 세션 종료 후 사용자가 남기는 평가
  */
 @Entity

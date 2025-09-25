@@ -86,7 +86,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "철학 상담",
                     ),
                 )
@@ -159,7 +159,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -214,7 +214,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -238,7 +238,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -269,7 +269,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -317,7 +317,7 @@ class GetSessionMessagesApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 

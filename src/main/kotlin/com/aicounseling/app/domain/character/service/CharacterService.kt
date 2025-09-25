@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * CounselorService - 상담사 관련 비즈니스 로직
+ * CounselorService - 캐릭터 관련 비즈니스 로직
  *
  * 주요 기능:
- * - 상담사 목록 조회 (정렬, 페이징)
- * - 상담사 상세 정보 조회
+ * - 캐릭터 목록 조회 (정렬, 페이징)
+ * - 캐릭터 상세 정보 조회
  * - 즐겨찾기 관리
  */
 @Service
@@ -38,10 +38,10 @@ class CharacterService(
     private val characterCacheService: CharacterCacheService,
 ) {
     /**
-     * 상담사 목록 조회
-     * GET /counselors?sort={sort}
+     * 캐릭터 목록 조회
+     * GET /characters?sort={sort}
      */
-    fun getCounselors(
+    fun getCharacters(
         sort: String?,
         pageable: Pageable,
         userId: Long? = null,
@@ -50,14 +50,14 @@ class CharacterService(
         val validSorts = listOf("popular", "rating", "recent")
         val finalSort: String = if (!sort.isNullOrEmpty() && sort in validSorts) sort else "recent"
 
-        val baseResponse = characterCacheService.getCounselorPage(finalSort, pageable)
+        val baseResponse = characterCacheService.getCharacterPage(finalSort, pageable)
 
         val response =
             if (userId != null) {
                 val favorites =
-                    baseResponse.content.map { counselor ->
-                        val isFavorite = favoriteCharacterRepository.existsByUserIdAndCharacterId(userId, counselor.id)
-                        counselor.copy(isFavorite = isFavorite)
+                    baseResponse.content.map { character ->
+                        val isFavorite = favoriteCharacterRepository.existsByUserIdAndCharacterId(userId, character.id)
+                        character.copy(isFavorite = isFavorite)
                     }
                 baseResponse.copy(content = favorites)
             } else {
@@ -66,48 +66,48 @@ class CharacterService(
 
         return RsData.of(
             "S-1",
-            "상담사 목록 조회 성공",
+            "캐릭터 목록 조회 성공",
             response,
         )
     }
 
     /**
-     * 상담사 상세 정보 조회
-     * GET /counselors/{id}
+     * 캐릭터 상세 정보 조회
+     * GET /characters/{id}
      */
-    fun getCounselorDetail(
-        counselorId: Long,
+    fun getCharacterDetail(
+        characterId: Long,
         userId: Long?,
     ): RsData<CharacterDetailResponse> {
-        val counselor =
-            characterCacheService.getCounselorDetail(counselorId)
+        val character =
+            characterCacheService.getCharacterDetail(characterId)
                 ?: return RsData.of(
                     "F-404",
-                    "상담사를 찾을 수 없습니다",
+                    "캐릭터를 찾을 수 없습니다",
                     null,
                 )
 
         // 사용자가 로그인한 경우 즐겨찾기 여부 확인
-        val counselorWithFavorite =
+        val characterWithFavorite =
             if (userId != null) {
-                val isFavorite = favoriteCharacterRepository.existsByUserIdAndCharacterId(userId, counselorId)
-                counselor.copy(isFavorite = isFavorite)
+                val isFavorite = favoriteCharacterRepository.existsByUserIdAndCharacterId(userId, characterId)
+                character.copy(isFavorite = isFavorite)
             } else {
-                counselor
+                character
             }
 
         return RsData.of(
             "S-1",
-            "상담사 정보 조회 성공",
-            counselorWithFavorite,
+            "캐릭터 정보 조회 성공",
+            characterWithFavorite,
         )
     }
 
     /**
-     * 즐겨찾기 상담사 목록 조회
-     * GET /counselors/favorites
+     * 즐겨찾기 캐릭터 목록 조회
+     * GET /characters/favorites
      */
-    fun getFavoriteCounselors(
+    fun getFavoriteCharacters(
         userId: Long,
         pageable: Pageable,
     ): RsData<PagedResponse<FavoriteCharacterResponse>> {
@@ -123,39 +123,39 @@ class CharacterService(
     }
 
     /**
-     * 상담사 즐겨찾기 추가
-     * POST /counselors/{id}/favorite
+     * 캐릭터 즐겨찾기 추가
+     * POST /characters/{id}/favorite
      */
     @Transactional
     fun addFavorite(
         userId: Long,
-        counselorId: Long,
+        characterId: Long,
     ): RsData<String> {
         // 사용자 조회
         val user =
             userRepository.findById(userId).orElse(null)
                 ?: return RsData.of("F-404", "사용자를 찾을 수 없습니다", null)
 
-        // 상담사 조회 (활성 상태 체크 필요)
-        val counselor =
-            characterRepository.findById(counselorId).orElse(null)
-                ?: return RsData.of("F-404", "상담사를 찾을 수 없습니다", null)
+        // 캐릭터 조회 (활성 상태 체크 필요)
+        val character =
+            characterRepository.findById(characterId).orElse(null)
+                ?: return RsData.of("F-404", "캐릭터를 찾을 수 없습니다", null)
 
-        if (!counselor.isActive) {
-            return RsData.of("F-400", "비활성화된 상담사입니다", null)
+        if (!character.isActive) {
+            return RsData.of("F-400", "비활성화된 캐릭터입니다", null)
         }
 
         // 이미 즐겨찾기인지 확인
-        val exists = favoriteCharacterRepository.existsByUserAndCharacter(user, counselor)
+        val exists = favoriteCharacterRepository.existsByUserAndCharacter(user, character)
         if (exists) {
-            return RsData.of("F-409", "이미 즐겨찾기한 상담사입니다", null)
+            return RsData.of("F-409", "이미 즐겨찾기한 캐릭터입니다", null)
         }
 
         // 즐겨찾기 추가
         val favorite =
             FavoriteCharacter(
                 user = user,
-                character = counselor,
+                character = character,
             )
         favoriteCharacterRepository.save(favorite)
 
@@ -167,37 +167,37 @@ class CharacterService(
     }
 
     /**
-     * 상담사 즐겨찾기 제거
-     * DELETE /counselors/{id}/favorite
+     * 캐릭터 즐겨찾기 제거
+     * DELETE /characters/{id}/favorite
      */
     @Transactional
     fun removeFavorite(
         userId: Long,
-        counselorId: Long,
+        characterId: Long,
     ): RsData<String> {
         // 사용자 조회
         val user =
             userRepository.findById(userId).orElse(null)
                 ?: return RsData.of("F-404", "사용자를 찾을 수 없습니다", null)
 
-        // 상담사 조회
-        val counselor =
-            characterRepository.findById(counselorId).orElse(null)
-                ?: return RsData.of("F-404", "상담사를 찾을 수 없습니다", null)
+        // 캐릭터 조회
+        val character =
+            characterRepository.findById(characterId).orElse(null)
+                ?: return RsData.of("F-404", "캐릭터를 찾을 수 없습니다", null)
 
-        // 비활성 상담사 체크
-        if (!counselor.isActive) {
-            return RsData.of("F-400", "비활성 상담사입니다", null)
+        // 비활성 캐릭터 체크
+        if (!character.isActive) {
+            return RsData.of("F-400", "비활성 캐릭터입니다", null)
         }
 
         // 즐겨찾기 존재 확인
-        val exists = favoriteCharacterRepository.existsByUserAndCharacter(user, counselor)
+        val exists = favoriteCharacterRepository.existsByUserAndCharacter(user, character)
         if (!exists) {
-            return RsData.of("F-404", "즐겨찾기하지 않은 상담사입니다", null)
+            return RsData.of("F-404", "즐겨찾기하지 않은 캐릭터입니다", null)
         }
 
         // 즐겨찾기 해제
-        favoriteCharacterRepository.deleteByUserAndCharacter(user, counselor)
+        favoriteCharacterRepository.deleteByUserAndCharacter(user, character)
 
         return RsData.of(
             "S-1",
@@ -207,11 +207,11 @@ class CharacterService(
     }
 
     /**
-     * 상담사 엔티티 조회 (내부 사용)
+     * 캐릭터 엔티티 조회 (내부 사용)
      * ChatSessionService에서 사용
      */
-    fun findById(counselorId: Long): Character? {
-        return characterRepository.findById(counselorId)
+    fun findById(characterId: Long): Character? {
+        return characterRepository.findById(characterId)
             .filter { it.isActive }
             .orElse(null)
     }
@@ -222,21 +222,21 @@ class CharacterService(
      *
      * @param sessionId 세션 ID
      * @param userId 사용자 ID
-     * @param counselorId 상담사 ID
+     * @param characterId 캐릭터 ID
      * @param request 평가 요청 (rating, feedback)
      * @return 평가 결과
      */
     @Transactional
     @Caching(
         evict = [
-            CacheEvict(cacheNames = ["counselor:list"], allEntries = true),
-            CacheEvict(cacheNames = ["counselor:detail"], key = "#counselorId"),
+            CacheEvict(cacheNames = ["character:list"], allEntries = true),
+            CacheEvict(cacheNames = ["character:detail"], key = "#characterId"),
         ],
     )
     fun addRating(
         sessionId: Long,
         userId: Long,
-        counselorId: Long,
+        characterId: Long,
         session: ChatSession,
         request: RateSessionRequest,
     ): RsData<String> {
@@ -250,22 +250,22 @@ class CharacterService(
             userRepository.findById(userId).orElse(null)
                 ?: return RsData.of("F-404", "사용자를 찾을 수 없습니다", null)
 
-        // 상담사 조회
-        val counselor =
-            characterRepository.findById(counselorId).orElse(null)
-                ?: return RsData.of("F-404", "상담사를 찾을 수 없습니다", null)
+        // 캐릭터 조회
+        val character =
+            characterRepository.findById(characterId).orElse(null)
+                ?: return RsData.of("F-404", "캐릭터를 찾을 수 없습니다", null)
 
         // 평가 생성
         val rating =
             CharacterRating(
                 user = user,
-                character = counselor,
+                character = character,
                 session = session,
                 rating = request.rating,
                 review = request.feedback,
             )
 
-        println("평점 저장: 세션ID=$sessionId, 상담사=${counselor.name}, 평점=${request.rating}")
+        println("평점 저장: 세션ID=$sessionId, 캐릭터=${character.name}, 평점=${request.rating}")
 
         characterRatingRepository.save(rating)
 

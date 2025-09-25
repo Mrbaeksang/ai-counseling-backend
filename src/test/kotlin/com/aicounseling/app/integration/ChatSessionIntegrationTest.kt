@@ -121,7 +121,7 @@ class ChatSessionIntegrationTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "통합 테스트 세션",
                     ),
                 )
@@ -175,7 +175,7 @@ class ChatSessionIntegrationTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "대화 컨텍스트 테스트",
                     ),
                 )

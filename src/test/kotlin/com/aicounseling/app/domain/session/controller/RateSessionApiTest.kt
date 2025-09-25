@@ -87,7 +87,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "평가할 세션",
                         closedAt = Instant.now(),
                     ),
@@ -129,7 +129,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         closedAt = Instant.now(),
                     ),
                 )
@@ -161,7 +161,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "진행중인 세션",
                         // closedAt = null (진행중)
                     ),
@@ -198,7 +198,7 @@ class RateSessionApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "이미 평가한 세션",
                         closedAt = Instant.now(),
                     ),

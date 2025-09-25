@@ -50,7 +50,7 @@ class ReportMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "신고 세션",
                     ),
                 )
@@ -101,7 +101,7 @@ class ReportMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
             val message =
@@ -147,7 +147,7 @@ class ReportMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 
@@ -155,7 +155,7 @@ class ReportMessageApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                     ),
                 )
 

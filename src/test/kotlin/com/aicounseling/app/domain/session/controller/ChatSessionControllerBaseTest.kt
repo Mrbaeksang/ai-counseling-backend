@@ -88,7 +88,7 @@ abstract class ChatSessionControllerBaseTest(
                 ),
             )
 
-        // 테스트 상담사 생성
+        // 테스트 캐릭터 생성
         testCharacter =
             characterRepository.save(
                 Character(

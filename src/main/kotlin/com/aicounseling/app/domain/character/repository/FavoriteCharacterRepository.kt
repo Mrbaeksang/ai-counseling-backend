@@ -32,8 +32,8 @@ interface FavoriteCharacterRepository : JpaRepository<FavoriteCharacter, Long>, 
     )
 
     /**
-     * 사용자 ID와 상담사 ID로 즐겨찾기 여부 확인
-     * 용도: 상담사 상세 조회 시 즐겨찾기 상태 표시
+     * 사용자 ID와 캐릭터 ID로 즐겨찾기 여부 확인
+     * 용도: 캐릭터 상세 조회 시 즐겨찾기 상태 표시
      */
     fun existsByUserIdAndCharacterId(
         userId: Long,

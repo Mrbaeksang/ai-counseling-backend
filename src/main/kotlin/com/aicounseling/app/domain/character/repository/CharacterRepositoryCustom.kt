@@ -15,22 +15,22 @@ import org.springframework.data.domain.Pageable
  */
 interface CharacterRepositoryCustom {
     /**
-     * 상담사 목록을 통계 정보와 함께 조회
+     * 캐릭터 목록을 통계 정보와 함께 조회
      *
      * @param sort 정렬 옵션 (popular: 세션 많은 순, rating: 평점 높은 순, recent: 최신 순)
      * @param pageable 페이징 정보
-     * @return 상담사 목록 (평균 평점, 총 세션 수 포함)
+     * @return 캐릭터 목록 (평균 평점, 총 세션 수 포함)
      */
-    fun findCounselorsWithStats(
+    fun findCharactersWithStats(
         sort: String,
         pageable: Pageable,
     ): Page<CharacterListResponse>
 
     /**
-     * 상담사 상세 정보를 통계와 함께 조회
+     * 캐릭터 상세 정보를 통계와 함께 조회
      *
-     * @param counselorId 상담사 ID
-     * @return 상담사 상세 정보 (평균 평점, 총 세션 수, 총 평가 수 포함)
+     * @param characterId 캐릭터 ID
+     * @return 캐릭터 상세 정보 (평균 평점, 총 세션 수, 총 평가 수 포함)
      */
-    fun findCounselorDetailById(counselorId: Long): CharacterDetailResponse?
+    fun findCharacterDetailById(characterId: Long): CharacterDetailResponse?
 }

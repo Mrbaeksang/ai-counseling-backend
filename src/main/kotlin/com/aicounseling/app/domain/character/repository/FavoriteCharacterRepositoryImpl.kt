@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 /**
  * FavoriteCounselor 커스텀 레포지토리 구현체
  *
- * JDSL을 사용하여 즐겨찾기 상담사 목록을 평균 평점과 함께 조회
+ * JDSL을 사용하여 즐겨찾기 캐릭터 목록을 평균 평점과 함께 조회
  */
 class FavoriteCharacterRepositoryImpl(
     private val kotlinJdslJpqlExecutor: KotlinJdslJpqlExecutor,

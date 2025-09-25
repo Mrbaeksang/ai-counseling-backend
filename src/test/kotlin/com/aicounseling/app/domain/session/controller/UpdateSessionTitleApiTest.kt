@@ -75,7 +75,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )
@@ -112,7 +112,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )
@@ -139,7 +139,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )
@@ -202,7 +202,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "다른 사용자의 세션",
                     ),
                 )
@@ -229,7 +229,7 @@ class UpdateSessionTitleApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "원래 제목",
                     ),
                 )

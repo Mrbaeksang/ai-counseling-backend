@@ -85,8 +85,8 @@ class CacheConfig(
         val cacheConfigurations =
             mapOf(
                 "user" to defaultConfig.entryTtl(USER_CACHE_TTL),
-                "counselor:list" to defaultConfig.entryTtl(COUNSELOR_LIST_CACHE_TTL),
-                "counselor:detail" to defaultConfig.entryTtl(COUNSELOR_DETAIL_CACHE_TTL),
+                "character:list" to defaultConfig.entryTtl(COUNSELOR_LIST_CACHE_TTL),
+                "character:detail" to defaultConfig.entryTtl(COUNSELOR_DETAIL_CACHE_TTL),
                 "user-sessions" to defaultConfig.entryTtl(USER_SESSION_CACHE_TTL),
                 "session-messages" to defaultConfig.entryTtl(SESSION_MESSAGES_CACHE_TTL),
                 "oauth:google-token" to defaultConfig.entryTtl(OAUTH_TOKEN_CACHE_TTL),

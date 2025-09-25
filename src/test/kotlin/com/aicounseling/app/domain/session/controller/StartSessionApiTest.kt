@@ -68,10 +68,10 @@ class StartSessionApiTest
         }
 
         @Test
-        @DisplayName("유효한 상담사 ID로 세션을 시작할 수 있다")
+        @DisplayName("유효한 캐릭터 ID로 세션을 시작할 수 있다")
         fun `should start session with valid counselor id`() {
             // Given
-            val request = CreateSessionRequest(counselorId = testCharacter.id)
+            val request = CreateSessionRequest(characterId = testCharacter.id)
 
             // When & Then
             mockMvc.perform(
@@ -89,10 +89,10 @@ class StartSessionApiTest
         }
 
         @Test
-        @DisplayName("존재하지 않는 상담사 ID로는 세션을 시작할 수 없다")
+        @DisplayName("존재하지 않는 캐릭터 ID로는 세션을 시작할 수 없다")
         fun `should fail with invalid counselor id`() {
             // Given
-            val request = CreateSessionRequest(counselorId = 99999L)
+            val request = CreateSessionRequest(characterId = 99999L)
 
             // When & Then
             mockMvc.perform(
@@ -110,7 +110,7 @@ class StartSessionApiTest
         @DisplayName("인증되지 않은 요청은 401 에러를 반환한다")
         fun `should return 401 for unauthenticated request`() {
             // Given
-            val request = CreateSessionRequest(counselorId = testCharacter.id)
+            val request = CreateSessionRequest(characterId = testCharacter.id)
 
             // When & Then
             mockMvc.perform(

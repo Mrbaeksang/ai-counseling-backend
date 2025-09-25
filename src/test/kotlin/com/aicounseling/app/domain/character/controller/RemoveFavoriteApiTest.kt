@@ -13,14 +13,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * DELETE /api/counselors/{id}/favorite API 테스트
- * 상담사 즐겨찾기 삭제 기능 검증
+ * DELETE /api/characters/{id}/favorite API 테스트
+ * 캐릭터 즐겨찾기 삭제 기능 검증
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@DisplayName("DELETE /api/counselors/{id}/favorite - 상담사 즐겨찾기 삭제")
+@DisplayName("DELETE /api/characters/{id}/favorite - 캐릭터 즐겨찾기 삭제")
 class RemoveFavoriteApiTest
     @Autowired
     constructor(
@@ -32,7 +32,7 @@ class RemoveFavoriteApiTest
         characterRatingRepository: com.aicounseling.app.domain.character.repository.CharacterRatingRepository,
         favoriteCharacterRepository: com.aicounseling.app.domain.character.repository.FavoriteCharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
-    ) : CounselorControllerBaseTest(
+    ) : CharacterControllerBaseTest(
             mockMvc,
             objectMapper,
             jwtTokenProvider,
@@ -46,12 +46,12 @@ class RemoveFavoriteApiTest
         @DisplayName("성공: 즐겨찾기 삭제")
         fun removeFavorite_withExistingFavorite_deletesSuccessfully() {
             // given: 즐겨찾기 추가
-            createFavoriteCounselor(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter1)
             assert(favoriteCharacterRepository.findAll().size == 1)
 
             // when & then
             mockMvc.perform(
-                delete("/api/counselors/${testCharacter1.id}/favorite")
+                delete("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -65,30 +65,30 @@ class RemoveFavoriteApiTest
         }
 
         @Test
-        @DisplayName("성공: 즐겨찾기되지 않은 상담사 삭제 시도")
+        @DisplayName("성공: 즐겨찾기되지 않은 캐릭터 삭제 시도")
         fun removeFavorite_withNonExistingFavorite_returnsNotFound() {
             // when & then
             mockMvc.perform(
-                delete("/api/counselors/${testCharacter1.id}/favorite")
+                delete("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-404"))
-                .andExpect(jsonPath("$.msg").value("즐겨찾기하지 않은 상담사입니다"))
+                .andExpect(jsonPath("$.msg").value("즐겨찾기하지 않은 캐릭터입니다"))
                 .andExpect(jsonPath("$.data").doesNotExist())
         }
 
         @Test
         @DisplayName("성공: 다른 사용자의 즐겨찾기는 영향받지 않음")
         fun removeFavorite_withOtherUserFavorite_doesNotAffectOthers() {
-            // given: 두 사용자가 같은 상담사 즐겨찾기
-            createFavoriteCounselor(testUser, testCharacter1)
-            createFavoriteCounselor(testUser2, testCharacter1)
+            // given: 두 사용자가 같은 캐릭터 즐겨찾기
+            createFavoriteCharacter(testUser, testCharacter1)
+            createFavoriteCharacter(testUser2, testCharacter1)
             assert(favoriteCharacterRepository.findAll().size == 2)
 
             // when: testUser가 즐겨찾기 삭제
             mockMvc.perform(
-                delete("/api/counselors/${testCharacter1.id}/favorite")
+                delete("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -101,16 +101,16 @@ class RemoveFavoriteApiTest
         }
 
         @Test
-        @DisplayName("성공: 여러 즐겨찾기 중 특정 상담사만 삭제")
+        @DisplayName("성공: 여러 즐겨찾기 중 특정 캐릭터만 삭제")
         fun removeFavorite_withMultipleFavorites_deletesOnlySpecified() {
-            // given: 여러 상담사 즐겨찾기
-            createFavoriteCounselor(testUser, testCharacter1)
-            createFavoriteCounselor(testUser, testCharacter2)
+            // given: 여러 캐릭터 즐겨찾기
+            createFavoriteCharacter(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter2)
             assert(favoriteCharacterRepository.findAll().size == 2)
 
-            // when: 특정 상담사만 삭제
+            // when: 특정 캐릭터만 삭제
             mockMvc.perform(
-                delete("/api/counselors/${testCharacter1.id}/favorite")
+                delete("/api/characters/${testCharacter1.id}/favorite")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -123,29 +123,29 @@ class RemoveFavoriteApiTest
         }
 
         @Test
-        @DisplayName("실패: 존재하지 않는 상담사 즐겨찾기 삭제 시도")
+        @DisplayName("실패: 존재하지 않는 캐릭터 즐겨찾기 삭제 시도")
         fun removeFavorite_withInvalidCounselor_returns404() {
             // when & then
             mockMvc.perform(
-                delete("/api/counselors/99999/favorite")
+                delete("/api/characters/99999/favorite")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-404"))
-                .andExpect(jsonPath("$.msg").value("상담사를 찾을 수 없습니다"))
+                .andExpect(jsonPath("$.msg").value("캐릭터를 찾을 수 없습니다"))
         }
 
         @Test
-        @DisplayName("실패: 비활성 상담사 즐겨찾기 삭제 시도")
+        @DisplayName("실패: 비활성 캐릭터 즐겨찾기 삭제 시도")
         fun removeFavorite_withInactiveCounselor_returns404() {
             // when & then
             mockMvc.perform(
-                delete("/api/counselors/${testCharacter3.id}/favorite")
+                delete("/api/characters/${testCharacter3.id}/favorite")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-400"))
-                .andExpect(jsonPath("$.msg").value("비활성 상담사입니다"))
+                .andExpect(jsonPath("$.msg").value("비활성 캐릭터입니다"))
         }
 
         @Test
@@ -153,7 +153,7 @@ class RemoveFavoriteApiTest
         fun removeFavorite_withoutAuth_returns401() {
             // when & then
             mockMvc.perform(
-                delete("/api/counselors/${testCharacter1.id}/favorite"),
+                delete("/api/characters/${testCharacter1.id}/favorite"),
             )
                 .andExpect(status().isUnauthorized)
                 .andExpect(jsonPath("$.resultCode").value("F-401"))

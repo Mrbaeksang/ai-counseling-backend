@@ -101,7 +101,7 @@ class ChatSessionController(
             rq.currentUserId
                 ?: return RsData.of("F-401", "로그인이 필요합니다", null)
 
-        val response = sessionService.startSession(userId, request.counselorId)
+        val response = sessionService.startSession(userId, request.characterId)
 
         return RsData.of(
             "S-1",

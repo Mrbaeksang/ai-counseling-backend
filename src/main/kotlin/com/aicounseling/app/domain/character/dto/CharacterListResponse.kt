@@ -1,11 +1,11 @@
 package com.aicounseling.app.domain.character.dto
 
 /**
- * 상담사 목록 조회 응답 DTO
+ * 캐릭터 목록 조회 응답 DTO
  *
- * @param id 상담사 ID
- * @param name 상담사 이름
- * @param title 상담사 직책
+ * @param id 캐릭터 ID
+ * @param name 캐릭터 이름
+ * @param title 캐릭터 직책
  * @param avatarUrl 프로필 이미지 URL
  * @param averageRating 평균 별점 (1-10)
  * @param totalSessions 총 세션 수

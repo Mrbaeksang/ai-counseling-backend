@@ -30,7 +30,7 @@ class ChatSessionRepositoryImpl(
             kotlinJdslJpqlExecutor.findPage(pageable) {
                 selectNew<SessionListResponse>(
                     path(ChatSession::id),
-                    path(ChatSession::counselorId),
+                    path(ChatSession::characterId),
                     coalesce(
                         path(ChatSession::title),
                         value(AppConstants.Session.DEFAULT_SESSION_TITLE),
@@ -46,7 +46,7 @@ class ChatSessionRepositoryImpl(
                 ).from(
                     entity(ChatSession::class),
                     join(Character::class).on(
-                        path(ChatSession::counselorId).eq(path(Character::id)),
+                        path(ChatSession::characterId).eq(path(Character::id)),
                     ),
                 ).where(
                     and(

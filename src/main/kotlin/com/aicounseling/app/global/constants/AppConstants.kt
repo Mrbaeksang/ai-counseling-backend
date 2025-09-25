@@ -83,7 +83,7 @@ object AppConstants {
 
     object ErrorMessages {
         const val USER_NOT_FOUND = "사용자를 찾을 수 없습니다"
-        const val COUNSELOR_NOT_FOUND = "상담사를 찾을 수 없습니다"
+        const val COUNSELOR_NOT_FOUND = "캐릭터를 찾을 수 없습니다"
         const val SESSION_NOT_FOUND = "세션을 찾을 수 없습니다"
         const val UNAUTHORIZED = "인증이 필요합니다"
         const val FORBIDDEN = "권한이 없습니다"

@@ -13,14 +13,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * GET /api/counselors API 테스트
- * 상담사 목록 조회 기능 검증
+ * GET /api/characters API 테스트
+ * 캐릭터 목록 조회 기능 검증
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@DisplayName("GET /api/counselors - 상담사 목록 조회")
+@DisplayName("GET /api/characters - 캐릭터 목록 조회")
 class GetCounselorsApiTest
     @Autowired
     constructor(
@@ -32,7 +32,7 @@ class GetCounselorsApiTest
         characterRatingRepository: com.aicounseling.app.domain.character.repository.CharacterRatingRepository,
         favoriteCharacterRepository: com.aicounseling.app.domain.character.repository.FavoriteCharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
-    ) : CounselorControllerBaseTest(
+    ) : CharacterControllerBaseTest(
             mockMvc,
             objectMapper,
             jwtTokenProvider,
@@ -43,7 +43,7 @@ class GetCounselorsApiTest
             sessionRepository,
         ) {
         @Test
-        @DisplayName("성공: 인증된 사용자가 활성 상담사 목록 조회")
+        @DisplayName("성공: 인증된 사용자가 활성 캐릭터 목록 조회")
         fun getCounselors_withAuth_returnsActiveCounselors() {
             // given: 평가 데이터 생성
             createTestSessionWithRating(testUser, testCharacter1, 8)
@@ -52,12 +52,12 @@ class GetCounselorsApiTest
 
             // when & then
             mockMvc.perform(
-                get("/api/counselors")
+                get("/api/characters")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
-                .andExpect(jsonPath("$.msg").value("상담사 목록 조회 성공"))
+                .andExpect(jsonPath("$.msg").value("캐릭터 목록 조회 성공"))
                 .andExpect(jsonPath("$.data.content").isArray)
                 .andExpect(jsonPath("$.data.content.length()").value(2)) // 니체는 비활성이라 제외
                 // createdAt DESC 정렬이므로 공자(나중 생성)가 먼저, 소크라테스가 두 번째
@@ -77,7 +77,7 @@ class GetCounselorsApiTest
         fun getCounselors_withPaging_returnsPagedResult() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors")
+                get("/api/characters")
                     .header("Authorization", "Bearer $authToken")
                     .param("page", "1")
                     .param("size", "1"),
@@ -95,7 +95,7 @@ class GetCounselorsApiTest
         fun getCounselors_withSortParam_returnsSortedResult() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors")
+                get("/api/characters")
                     .header("Authorization", "Bearer $authToken")
                     .param("sort", "popular"),
             )
@@ -105,11 +105,11 @@ class GetCounselorsApiTest
         }
 
         @Test
-        @DisplayName("성공: 평가 데이터가 없어도 상담사 목록 조회 가능")
+        @DisplayName("성공: 평가 데이터가 없어도 캐릭터 목록 조회 가능")
         fun getCounselors_withoutRatings_returnsAllActiveCounselors() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors")
+                get("/api/characters")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -124,11 +124,11 @@ class GetCounselorsApiTest
         fun getCounselors_withoutAuth_returnsPublicData() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors"),
+                get("/api/characters"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
-                .andExpect(jsonPath("$.msg").value("상담사 목록 조회 성공"))
+                .andExpect(jsonPath("$.msg").value("캐릭터 목록 조회 성공"))
                 .andExpect(jsonPath("$.data.content").isArray)
         }
     }

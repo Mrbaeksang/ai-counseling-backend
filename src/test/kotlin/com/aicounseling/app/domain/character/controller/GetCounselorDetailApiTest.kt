@@ -13,14 +13,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 /**
- * GET /api/counselors/{id} API 테스트
- * 상담사 상세 정보 조회 기능 검증
+ * GET /api/characters/{id} API 테스트
+ * 캐릭터 상세 정보 조회 기능 검증
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
-@DisplayName("GET /api/counselors/{id} - 상담사 상세 정보 조회")
+@DisplayName("GET /api/characters/{id} - 캐릭터 상세 정보 조회")
 class GetCounselorDetailApiTest
     @Autowired
     constructor(
@@ -32,7 +32,7 @@ class GetCounselorDetailApiTest
         characterRatingRepository: com.aicounseling.app.domain.character.repository.CharacterRatingRepository,
         favoriteCharacterRepository: com.aicounseling.app.domain.character.repository.FavoriteCharacterRepository,
         sessionRepository: com.aicounseling.app.domain.session.repository.ChatSessionRepository,
-    ) : CounselorControllerBaseTest(
+    ) : CharacterControllerBaseTest(
             mockMvc,
             objectMapper,
             jwtTokenProvider,
@@ -43,21 +43,21 @@ class GetCounselorDetailApiTest
             sessionRepository,
         ) {
         @Test
-        @DisplayName("성공: 활성 상담사의 상세 정보 조회")
+        @DisplayName("성공: 활성 캐릭터의 상세 정보 조회")
         fun getCounselorDetail_withValidId_returnsDetail() {
             // given: 평가 데이터와 즐겨찾기 생성
             createTestSessionWithRating(testUser, testCharacter1, 8)
             createTestSessionWithRating(testUser2, testCharacter1, 10)
-            createFavoriteCounselor(testUser, testCharacter1)
+            createFavoriteCharacter(testUser, testCharacter1)
 
             // when & then
             mockMvc.perform(
-                get("/api/counselors/${testCharacter1.id}")
+                get("/api/characters/${testCharacter1.id}")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
-                .andExpect(jsonPath("$.msg").value("상담사 정보 조회 성공"))
+                .andExpect(jsonPath("$.msg").value("캐릭터 정보 조회 성공"))
                 .andExpect(jsonPath("$.data.id").value(testCharacter1.id))
                 .andExpect(jsonPath("$.data.name").value("소크라테스"))
                 .andExpect(jsonPath("$.data.title").value("고대 그리스의 철학자"))
@@ -70,11 +70,11 @@ class GetCounselorDetailApiTest
         }
 
         @Test
-        @DisplayName("성공: 즐겨찾기하지 않은 상담사 조회")
+        @DisplayName("성공: 즐겨찾기하지 않은 캐릭터 조회")
         fun getCounselorDetail_withoutFavorite_returnsFalseIsFavorite() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/${testCharacter2.id}")
+                get("/api/characters/${testCharacter2.id}")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -84,11 +84,11 @@ class GetCounselorDetailApiTest
         }
 
         @Test
-        @DisplayName("성공: 평가가 없는 상담사 조회")
+        @DisplayName("성공: 평가가 없는 캐릭터 조회")
         fun getCounselorDetail_withoutRatings_returnsZeroRating() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/${testCharacter2.id}")
+                get("/api/characters/${testCharacter2.id}")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
@@ -98,29 +98,29 @@ class GetCounselorDetailApiTest
         }
 
         @Test
-        @DisplayName("실패: 존재하지 않는 상담사 ID")
+        @DisplayName("실패: 존재하지 않는 캐릭터 ID")
         fun getCounselorDetail_withInvalidId_returns404() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/99999")
+                get("/api/characters/99999")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-404"))
-                .andExpect(jsonPath("$.msg").value("상담사를 찾을 수 없습니다"))
+                .andExpect(jsonPath("$.msg").value("캐릭터를 찾을 수 없습니다"))
         }
 
         @Test
-        @DisplayName("실패: 비활성 상담사 조회")
+        @DisplayName("실패: 비활성 캐릭터 조회")
         fun getCounselorDetail_withInactiveCounselor_returns404() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/${testCharacter3.id}")
+                get("/api/characters/${testCharacter3.id}")
                     .header("Authorization", "Bearer $authToken"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("F-404"))
-                .andExpect(jsonPath("$.msg").value("상담사를 찾을 수 없습니다"))
+                .andExpect(jsonPath("$.msg").value("캐릭터를 찾을 수 없습니다"))
         }
 
         @Test
@@ -128,11 +128,11 @@ class GetCounselorDetailApiTest
         fun getCounselorDetail_withoutAuth_returnsSuccessWithoutFavorite() {
             // when & then
             mockMvc.perform(
-                get("/api/counselors/${testCharacter1.id}"),
+                get("/api/characters/${testCharacter1.id}"),
             )
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.resultCode").value("S-1"))
-                .andExpect(jsonPath("$.msg").value("상담사 정보 조회 성공"))
+                .andExpect(jsonPath("$.msg").value("캐릭터 정보 조회 성공"))
                 .andExpect(jsonPath("$.data.id").value(testCharacter1.id))
                 .andExpect(jsonPath("$.data.isFavorite").value(false))
         }

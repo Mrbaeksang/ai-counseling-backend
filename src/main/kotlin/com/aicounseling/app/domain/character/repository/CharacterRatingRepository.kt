@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 /**
- * CounselorRatingRepository - 상담사 평가 데이터 액세스
+ * CounselorRatingRepository - 캐릭터 평가 데이터 액세스
  *
  * 핵심 원칙: 세션당 1개 평가만 허용
  * - 한 번 평가하면 수정/삭제 불가

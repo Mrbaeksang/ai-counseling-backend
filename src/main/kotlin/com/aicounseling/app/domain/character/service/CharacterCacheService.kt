@@ -13,19 +13,19 @@ class CharacterCacheService(
     private val characterRepository: CharacterRepository,
 ) {
     @Cacheable(
-        cacheNames = ["counselor:list"],
+        cacheNames = ["character:list"],
         key = "T(java.lang.String).format('%s:%d:%d', #sort, #pageable.pageNumber, #pageable.pageSize)",
     )
-    fun getCounselorPage(
+    fun getCharacterPage(
         sort: String,
         pageable: Pageable,
     ): PagedResponse<CharacterListResponse> {
-        val page = characterRepository.findCounselorsWithStats(sort, pageable)
+        val page = characterRepository.findCharactersWithStats(sort, pageable)
         return PagedResponse.from(page)
     }
 
-    @Cacheable(cacheNames = ["counselor:detail"], key = "#counselorId")
-    fun getCounselorDetail(counselorId: Long): CharacterDetailResponse? {
-        return characterRepository.findCounselorDetailById(counselorId)
+    @Cacheable(cacheNames = ["character:detail"], key = "#characterId")
+    fun getCharacterDetail(characterId: Long): CharacterDetailResponse? {
+        return characterRepository.findCharacterDetailById(characterId)
     }
 }

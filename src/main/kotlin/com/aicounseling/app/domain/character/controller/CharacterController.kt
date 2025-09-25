@@ -18,32 +18,32 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/counselors")
+@RequestMapping("/api/characters")
 class CharacterController(
     private val characterService: CharacterService,
     private val rq: Rq,
 ) {
     @GetMapping
-    fun getCounselors(
+    fun getCharacters(
         @RequestParam(defaultValue = "recent") sort: String,
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): RsData<PagedResponse<CharacterListResponse>> {
         val pageable = PageRequest.of(page - 1, size)
         val userId = rq.currentUserId
-        return characterService.getCounselors(sort, pageable, userId)
+        return characterService.getCharacters(sort, pageable, userId)
     }
 
     @GetMapping("/{id}")
-    fun getCounselorDetail(
+    fun getCharacterDetail(
         @PathVariable id: Long,
     ): RsData<CharacterDetailResponse> {
         val userId = rq.currentUserId
-        return characterService.getCounselorDetail(id, userId)
+        return characterService.getCharacterDetail(id, userId)
     }
 
     @GetMapping("/favorites")
-    fun getFavoriteCounselors(
+    fun getFavoriteCharacters(
         @RequestParam(defaultValue = "1") page: Int,
         @RequestParam(defaultValue = "20") size: Int,
     ): RsData<PagedResponse<FavoriteCharacterResponse>> {
@@ -57,7 +57,7 @@ class CharacterController(
                 size,
                 Sort.by(Sort.Direction.DESC, "createdAt"),
             )
-        return characterService.getFavoriteCounselors(userId, pageable)
+        return characterService.getFavoriteCharacters(userId, pageable)
     }
 
     @PostMapping("/{id}/favorite")

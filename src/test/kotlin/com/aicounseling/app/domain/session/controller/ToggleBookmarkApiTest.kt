@@ -73,7 +73,7 @@ class ToggleBookmarkApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "북마크 테스트 세션",
                         isBookmarked = false,
                     ),
@@ -103,7 +103,7 @@ class ToggleBookmarkApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "북마크 해제 테스트 세션",
                         isBookmarked = true,
                     ),
@@ -143,7 +143,7 @@ class ToggleBookmarkApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = otherUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "다른 사용자의 세션",
                         isBookmarked = false,
                     ),
@@ -171,7 +171,7 @@ class ToggleBookmarkApiTest
                 sessionRepository.save(
                     ChatSession(
                         userId = testUser.id,
-                        counselorId = testCharacter.id,
+                        characterId = testCharacter.id,
                         title = "북마크 테스트 세션",
                         isBookmarked = false,
                     ),

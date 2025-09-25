@@ -7,23 +7,23 @@ import jakarta.persistence.Index
 import jakarta.persistence.Table
 
 /**
- * Counselor 엔티티 - AI 철학 상담사 (순수 데이터만)
- * 비즈니스 로직은 CounselorService로 이동
+ * Character 엔티티 - AI 철학 캐릭터 (순수 데이터만)
+ * 비즈니스 로직은 CharacterService로 이동
  *
  * ERD 기준:
- * - name: 상담사 이름 (예: "소크라테스")
+ * - name: 캐릭터 이름 (예: "소크라테스")
  * - title: 직함 (예: "고대 그리스 철학자")
- * - description: 상담사 소개
+ * - description: 캐릭터 소개
  * - basePrompt: AI 프롬프트 (성격 특성 포함)
  * - avatarUrl: 프로필 이미지 URL
  * - isActive: 활성화 상태
  */
 @Entity
 @Table(
-    name = "counselors",
+    name = "characters",
     indexes = [
-        Index(name = "idx_counselor_active", columnList = "is_active"),
-        Index(name = "idx_counselor_name", columnList = "name"),
+        Index(name = "idx_character_active", columnList = "is_active"),
+        Index(name = "idx_character_name", columnList = "name"),
     ],
 )
 class Character(
