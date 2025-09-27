@@ -108,12 +108,7 @@ class CacheConfig(
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build()
 
-        // 타입 정보를 포함하도록 ObjectMapper 설정
-        objectMapper.activateDefaultTyping(
-            objectMapper.polymorphicTypeValidator,
-            ObjectMapper.DefaultTyping.NON_FINAL
-        )
-
+        // 기본 GenericJackson2JsonRedisSerializer 사용 (타입 정보 자동 처리)
         return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
