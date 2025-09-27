@@ -1,12 +1,15 @@
 package com.aicounseling.app.global.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
@@ -39,7 +42,6 @@ private val OAUTH_TOKEN_CACHE_TTL = Duration.ofSeconds(OAUTH_TOKEN_CACHE_TTL_SEC
 @ConditionalOnProperty(value = ["redis.enabled"], havingValue = "true", matchIfMissing = true)
 class CacheConfig(
     @Value("\${REDIS_URL:}") private val redisUrl: String,
-    private val objectMapper: ObjectMapper,
 ) {
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
@@ -61,7 +63,7 @@ class CacheConfig(
 
     @Bean
     fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
-        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
+        val serializer = createRedisSerializer()
         return RedisTemplate<String, Any>().apply {
             this.connectionFactory = connectionFactory
             keySerializer = StringRedisSerializer()
@@ -74,7 +76,7 @@ class CacheConfig(
 
     @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory): CacheManager {
-        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
+        val serializer = createRedisSerializer()
         val defaultConfig =
             RedisCacheConfiguration
                 .defaultCacheConfig()
@@ -97,5 +99,14 @@ class CacheConfig(
             .cacheDefaults(defaultConfig)
             .withInitialCacheConfigurations(cacheConfigurations)
             .build()
+    }
+
+    private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
+        val objectMapper: ObjectMapper =
+            Jackson2ObjectMapperBuilder.json()
+                .modulesToInstall(JavaTimeModule())
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build()
+        return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
