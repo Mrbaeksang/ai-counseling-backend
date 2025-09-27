@@ -17,6 +17,19 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain,
     ) {
+        // OPTIONS 요청은 JWT 인증 스킵 (CORS preflight)
+        if (request.method == "OPTIONS") {
+            filterChain.doFilter(request, response)
+            return
+        }
+
+        // 이미 처리된 요청은 스킵 (무한 루프 방지)
+        if (request.getAttribute("JWT_FILTER_APPLIED") != null) {
+            filterChain.doFilter(request, response)
+            return
+        }
+        request.setAttribute("JWT_FILTER_APPLIED", true)
+
         val token = extractToken(request)
 
         if (token != null && jwtTokenProvider.validateToken(token)) {

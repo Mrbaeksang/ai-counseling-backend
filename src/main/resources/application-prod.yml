@@ -34,8 +34,12 @@ cors:
 # 운영 환경 로깅
 logging:
   level:
-    root: WARN
+    root: INFO  # WARN에서 INFO로 조정 (중요한 정보 확인용)
     com.aicounseling: INFO
+    # Spring Security 로그 레벨 낮춤 (과도한 로깅 방지)
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.springframework.web.filter: ERROR  # 필터 체인 로그 최소화
 
 # 운영 환경 보안 설정
 server:
