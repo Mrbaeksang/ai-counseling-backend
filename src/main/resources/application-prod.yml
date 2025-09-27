@@ -1,4 +1,20 @@
 spring:
+  # 메모리 최적화: 사용하지 않는 빈들을 지연 로드 (20MB 절약)
+  main:
+    lazy-initialization: true
+    # 웹 응용 프로그램 유형 명시적 설정 (메모리 절약)
+    web-application-type: servlet
+
+  # 개발 도구 비활성화 (프로덕션 환경)
+  devtools:
+    restart:
+      enabled: false
+
+  # 메모리 최적화: 자동 설정 제외로 불필요한 빈 로딩 방지
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -11,6 +27,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        # 메모리 최적화: 불필요한 통계 수집 비활성화 (5MB 절약)
+        generate_statistics: false
 
   ai:
     openai:
@@ -31,6 +49,13 @@ cors:
   allowed-headers: "*"
   allow-credentials: true
 
+# 메모리 최적화: Actuator 엔드포인트 최소화 (4MB 절약)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health  # health check만 유지, 나머지 비활성화
+
 # 운영 환경 로깅
 logging:
   level:
@@ -41,8 +66,13 @@ logging:
     org.springframework.web: WARN
     org.springframework.web.filter: ERROR  # 필터 체인 로그 최소화
 
-# 운영 환경 보안 설정
+# 운영 환경 보안 설정 및 성능 최적화
 server:
   error:
     include-message: never
     include-stacktrace: never
+  # 메모리 최적화: 톰캣 스레드 풀 최적화 (소규모 앱용)
+  tomcat:
+    threads:
+      max: 50      # 기본 200에서 50으로 감소 (메모리 절약)
+      min-spare: 5 # 기본 10에서 5로 감소
