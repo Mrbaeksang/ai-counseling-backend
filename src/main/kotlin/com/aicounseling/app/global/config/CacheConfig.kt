@@ -1,11 +1,14 @@
 package com.aicounseling.app.global.config
 
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
@@ -59,8 +62,7 @@ class CacheConfig(
 
     @Bean
     fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
-        // 기본 생성자를 사용하면 타입 정보를 함께 저장하므로 캐시 역직렬화 시 클래스 정보가 유지된다.
-        val serializer = GenericJackson2JsonRedisSerializer()
+        val serializer = createRedisSerializer()
         return RedisTemplate<String, Any>().apply {
             this.connectionFactory = connectionFactory
             keySerializer = StringRedisSerializer()
@@ -73,8 +75,7 @@ class CacheConfig(
 
     @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory): CacheManager {
-        // Redis 캐시도 동일한 직렬화기를 사용해 역직렬화 시 타입 손실을 방지한다.
-        val serializer = GenericJackson2JsonRedisSerializer()
+        val serializer = createRedisSerializer()
         val defaultConfig =
             RedisCacheConfiguration
                 .defaultCacheConfig()
@@ -97,5 +98,14 @@ class CacheConfig(
             .cacheDefaults(defaultConfig)
             .withInitialCacheConfigurations(cacheConfigurations)
             .build()
+    }
+
+    private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
+        val objectMapper =
+            Jackson2ObjectMapperBuilder.json()
+                .modulesToInstall(JavaTimeModule())
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .build()
+        return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
