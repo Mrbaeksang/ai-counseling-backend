@@ -4,9 +4,8 @@ import com.aicounseling.app.domain.session.dto.MessageItem
 import com.aicounseling.app.domain.session.dto.SessionListResponse
 import com.aicounseling.app.domain.session.repository.ChatSessionRepository
 import com.aicounseling.app.domain.session.repository.MessageRepository
+import com.aicounseling.app.global.pagination.CachedPage
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
@@ -24,8 +23,9 @@ class ChatSessionCacheService(
         bookmarked: Boolean?,
         isClosed: Boolean?,
         pageable: Pageable,
-    ): Page<SessionListResponse> {
-        return sessionRepository.findSessionsWithCharacter(userId, bookmarked, isClosed, pageable)
+    ): CachedPage<SessionListResponse> {
+        val page = sessionRepository.findSessionsWithCharacter(userId, bookmarked, isClosed, pageable)
+        return CachedPage.from(page)
     }
 
     @Cacheable(
@@ -35,10 +35,10 @@ class ChatSessionCacheService(
     fun getSessionMessages(
         sessionId: Long,
         pageable: Pageable,
-    ): Page<MessageItem> {
+    ): CachedPage<MessageItem> {
         val messages = messageRepository.findBySessionId(sessionId, pageable)
         val content = messages.content.map(MessageItem::from)
-        return PageImpl(content, messages.pageable, messages.totalElements)
+        return CachedPage(content = content, totalElements = messages.totalElements)
     }
 
     companion object {

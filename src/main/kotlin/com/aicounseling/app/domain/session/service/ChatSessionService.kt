@@ -56,7 +56,8 @@ class ChatSessionService(
     ): Page<SessionListResponse> {
         // Custom Repository 메서드를 사용하여 N+1 문제 해결
         // 한 번의 쿼리로 Session과 Character 정보를 함께 조회
-        return chatSessionCacheService.getUserSessions(userId, bookmarked, isClosed, pageable)
+        val cachedPage = chatSessionCacheService.getUserSessions(userId, bookmarked, isClosed, pageable)
+        return cachedPage.toPage(pageable)
     }
 
     /**
@@ -222,7 +223,8 @@ class ChatSessionService(
         pageable: Pageable,
     ): Page<MessageItem> {
         getSession(sessionId, userId) // 권한 확인용
-        return chatSessionCacheService.getSessionMessages(sessionId, pageable)
+        val cachedPage = chatSessionCacheService.getSessionMessages(sessionId, pageable)
+        return cachedPage.toPage(pageable)
     }
 
     /**
