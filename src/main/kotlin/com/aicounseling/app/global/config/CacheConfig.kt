@@ -1,7 +1,9 @@
 package com.aicounseling.app.global.config
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
@@ -108,7 +110,18 @@ class CacheConfig(
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build()
 
-        // 기본 GenericJackson2JsonRedisSerializer 사용 (타입 정보 자동 처리)
+        val typeValidator =
+            BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Any::class.java)
+                .build()
+
+        @Suppress("DEPRECATION")
+        objectMapper.activateDefaultTyping(
+            typeValidator,
+            ObjectMapper.DefaultTyping.NON_FINAL,
+            JsonTypeInfo.As.PROPERTY,
+        )
+
         return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
