@@ -107,6 +107,13 @@ class CacheConfig(
                 .modulesToInstall(JavaTimeModule())
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build()
+
+        // 타입 정보를 포함하도록 ObjectMapper 설정
+        objectMapper.activateDefaultTyping(
+            objectMapper.polymorphicTypeValidator,
+            ObjectMapper.DefaultTyping.NON_FINAL
+        )
+
         return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
