@@ -1,5 +1,6 @@
 package com.aicounseling.app.global.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.lettuce.core.RedisURI
@@ -101,7 +102,7 @@ class CacheConfig(
     }
 
     private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
-        val objectMapper =
+        val objectMapper: ObjectMapper =
             Jackson2ObjectMapperBuilder.json()
                 .modulesToInstall(JavaTimeModule())
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
