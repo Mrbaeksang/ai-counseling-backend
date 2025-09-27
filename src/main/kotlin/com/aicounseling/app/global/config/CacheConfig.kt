@@ -1,6 +1,5 @@
 package com.aicounseling.app.global.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -39,7 +38,6 @@ private val OAUTH_TOKEN_CACHE_TTL = Duration.ofSeconds(OAUTH_TOKEN_CACHE_TTL_SEC
 @ConditionalOnProperty(value = ["redis.enabled"], havingValue = "true", matchIfMissing = true)
 class CacheConfig(
     @Value("\${REDIS_URL:}") private val redisUrl: String,
-    private val objectMapper: ObjectMapper,
 ) {
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
@@ -61,7 +59,8 @@ class CacheConfig(
 
     @Bean
     fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
-        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
+        // 기본 생성자를 사용하면 타입 정보를 함께 저장하므로 캐시 역직렬화 시 클래스 정보가 유지된다.
+        val serializer = GenericJackson2JsonRedisSerializer()
         return RedisTemplate<String, Any>().apply {
             this.connectionFactory = connectionFactory
             keySerializer = StringRedisSerializer()
@@ -74,7 +73,8 @@ class CacheConfig(
 
     @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory): CacheManager {
-        val serializer = GenericJackson2JsonRedisSerializer(objectMapper)
+        // Redis 캐시도 동일한 직렬화기를 사용해 역직렬화 시 타입 손실을 방지한다.
+        val serializer = GenericJackson2JsonRedisSerializer()
         val defaultConfig =
             RedisCacheConfiguration
                 .defaultCacheConfig()
