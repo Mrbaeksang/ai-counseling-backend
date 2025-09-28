@@ -1,15 +1,11 @@
 package com.aicounseling.app.global.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
@@ -102,13 +98,7 @@ class CacheConfig(
     }
 
     private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
-        val objectMapper: ObjectMapper =
-            Jackson2ObjectMapperBuilder.json()
-                .modulesToInstall(JavaTimeModule())
-                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .build()
-
-        // GenericJackson2JsonRedisSerializer로 모든 타입 자동 처리
-        return GenericJackson2JsonRedisSerializer(objectMapper)
+        // 파라미터 없이 생성하면 내부적으로 타입 정보 처리하는 ObjectMapper 사용
+        return GenericJackson2JsonRedisSerializer()
     }
 }
