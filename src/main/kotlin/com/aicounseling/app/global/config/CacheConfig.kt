@@ -95,9 +95,12 @@ class CacheConfig(
 
         val typeValidator =
             BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType("com.aicounseling.app")
-                .allowIfBaseType("org.springframework.data.domain")
-                .allowIfBaseType("java.util")
+                .allowIfBaseType(Any::class.java)
+                .allowIfSubType("com.aicounseling.app.")
+                .allowIfSubType("org.springframework.data.domain.")
+                .allowIfSubType("java.util.")
+                .allowIfSubType("java.time.")
+                .allowIfSubType("java.lang.")
                 .build()
 
         mapper.registerModule(KotlinModule.Builder().build())
