@@ -17,7 +17,7 @@ import org.springframework.data.redis.connection.RedisPassword
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import java.time.Duration
@@ -101,14 +101,14 @@ class CacheConfig(
             .build()
     }
 
-    private fun createRedisSerializer(): Jackson2JsonRedisSerializer<Any> {
+    private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
         val objectMapper: ObjectMapper =
             Jackson2ObjectMapperBuilder.json()
                 .modulesToInstall(JavaTimeModule())
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build()
 
-        // Jackson2JsonRedisSerializer를 ObjectMapper와 함께 생성
-        return Jackson2JsonRedisSerializer(objectMapper, Any::class.java)
+        // GenericJackson2JsonRedisSerializer로 모든 타입 자동 처리
+        return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
