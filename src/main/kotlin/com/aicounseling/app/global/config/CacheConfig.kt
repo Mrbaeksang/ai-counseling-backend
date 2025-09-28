@@ -1,5 +1,9 @@
 package com.aicounseling.app.global.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -98,7 +102,20 @@ class CacheConfig(
     }
 
     private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
-        // 파라미터 없이 생성하면 내부적으로 타입 정보 처리하는 ObjectMapper 사용
-        return GenericJackson2JsonRedisSerializer()
+        // JavaTimeModule과 KotlinModule을 포함한 ObjectMapper 생성
+        val mapper = ObjectMapper().apply {
+            registerModule(JavaTimeModule())
+            registerModule(KotlinModule.Builder().build())
+            // 타입 정보 자동 포함 설정
+            activateDefaultTyping(
+                polymorphicTypeValidator,
+                ObjectMapper.DefaultTyping.NON_FINAL
+            )
+        }
+        return GenericJackson2JsonRedisSerializer(mapper)
     }
+
+    private val polymorphicTypeValidator = BasicPolymorphicTypeValidator.builder()
+        .allowIfBaseType(Any::class.java)
+        .build()
 }
