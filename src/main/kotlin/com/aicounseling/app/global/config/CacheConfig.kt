@@ -36,7 +36,7 @@ private val USER_SESSION_CACHE_TTL = Duration.ofSeconds(USER_SESSION_CACHE_TTL_S
 private val SESSION_MESSAGES_CACHE_TTL = Duration.ofSeconds(SESSION_MESSAGES_CACHE_TTL_SECONDS)
 private val OAUTH_TOKEN_CACHE_TTL = Duration.ofSeconds(OAUTH_TOKEN_CACHE_TTL_SECONDS)
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(value = ["redis.enabled"], havingValue = "true", matchIfMissing = true)
 class CacheConfig(
     @Value("\${REDIS_URL:}") private val redisUrl: String,
