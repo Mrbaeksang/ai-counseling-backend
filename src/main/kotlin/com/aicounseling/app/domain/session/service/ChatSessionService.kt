@@ -13,7 +13,6 @@ import com.aicounseling.app.domain.session.repository.MessageRepository
 import com.aicounseling.app.global.constants.AppConstants
 import com.aicounseling.app.global.rsData.RsData
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient

@@ -110,18 +110,7 @@ class CacheConfig(
                 .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .build()
 
-        val typeValidator =
-            BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType(Any::class.java)
-                .build()
-
-        @Suppress("DEPRECATION")
-        objectMapper.activateDefaultTyping(
-            typeValidator,
-            ObjectMapper.DefaultTyping.NON_FINAL,
-            JsonTypeInfo.As.PROPERTY,
-        )
-
+        // 타입 정보 자동 처리 (activateDefaultTyping 사용 안 함)
         return GenericJackson2JsonRedisSerializer(objectMapper)
     }
 }
