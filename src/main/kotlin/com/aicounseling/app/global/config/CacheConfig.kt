@@ -107,15 +107,14 @@ class CacheConfig(
             registerModule(JavaTimeModule())
             registerModule(KotlinModule.Builder().build())
             // 타입 정보 자동 포함 설정
+            val typeValidator = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Any::class.java)
+                .build()
             activateDefaultTyping(
-                polymorphicTypeValidator,
+                typeValidator,
                 ObjectMapper.DefaultTyping.NON_FINAL
             )
         }
         return GenericJackson2JsonRedisSerializer(mapper)
     }
-
-    private val polymorphicTypeValidator = BasicPolymorphicTypeValidator.builder()
-        .allowIfBaseType(Any::class.java)
-        .build()
 }
