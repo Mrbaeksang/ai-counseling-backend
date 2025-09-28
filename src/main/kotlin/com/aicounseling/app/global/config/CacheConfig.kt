@@ -1,6 +1,11 @@
 package com.aicounseling.app.global.config
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.lettuce.core.RedisURI
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -14,10 +19,8 @@ import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.connection.RedisPassword
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
-import org.springframework.data.redis.serializer.StringRedisSerializer
 import java.time.Duration
 
 private const val DEFAULT_CACHE_TTL_MINUTES = 10L
@@ -61,19 +64,6 @@ class CacheConfig(
     }
 
     @Bean
-    fun redisTemplate(connectionFactory: RedisConnectionFactory): RedisTemplate<String, Any> {
-        val serializer = createRedisSerializer()
-        return RedisTemplate<String, Any>().apply {
-            this.connectionFactory = connectionFactory
-            keySerializer = StringRedisSerializer()
-            valueSerializer = serializer
-            hashKeySerializer = StringRedisSerializer()
-            hashValueSerializer = serializer
-            afterPropertiesSet()
-        }
-    }
-
-    @Bean
     fun cacheManager(connectionFactory: RedisConnectionFactory): CacheManager {
         val serializer = createRedisSerializer()
         val defaultConfig =
@@ -101,10 +91,25 @@ class CacheConfig(
     }
 
     private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
-        // Spring Boot의 기본 ObjectMapper 사용 (있으면) - JavaTimeModule 등 이미 설정됨
-        // 없으면 기본 생성자 사용
-        return objectMapper?.let {
-            GenericJackson2JsonRedisSerializer(it)
-        } ?: GenericJackson2JsonRedisSerializer()
+        val mapper = (objectMapper ?: ObjectMapper()).copy()
+
+        val typeValidator =
+            BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType("com.aicounseling.app")
+                .allowIfBaseType("org.springframework.data.domain")
+                .allowIfBaseType("java.util")
+                .build()
+
+        mapper.registerModule(KotlinModule.Builder().build())
+        mapper.registerModule(JavaTimeModule())
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        @Suppress("DEPRECATION")
+        mapper.activateDefaultTyping(
+            typeValidator,
+            ObjectMapper.DefaultTyping.EVERYTHING,
+            JsonTypeInfo.As.PROPERTY,
+        )
+
+        return GenericJackson2JsonRedisSerializer(mapper)
     }
 }
