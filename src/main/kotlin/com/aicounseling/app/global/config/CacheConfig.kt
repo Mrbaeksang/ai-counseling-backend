@@ -1,10 +1,8 @@
 package com.aicounseling.app.global.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.lettuce.core.RedisURI
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.CacheManager
@@ -42,6 +40,7 @@ private val OAUTH_TOKEN_CACHE_TTL = Duration.ofSeconds(OAUTH_TOKEN_CACHE_TTL_SEC
 @ConditionalOnProperty(value = ["redis.enabled"], havingValue = "true", matchIfMissing = true)
 class CacheConfig(
     @Value("\${REDIS_URL:}") private val redisUrl: String,
+    @Autowired(required = false) private val objectMapper: ObjectMapper? = null,
 ) {
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory {
@@ -102,19 +101,10 @@ class CacheConfig(
     }
 
     private fun createRedisSerializer(): GenericJackson2JsonRedisSerializer {
-        // JavaTimeModule과 KotlinModule을 포함한 ObjectMapper 생성
-        val mapper = ObjectMapper().apply {
-            registerModule(JavaTimeModule())
-            registerModule(KotlinModule.Builder().build())
-            // 타입 정보 자동 포함 설정
-            val typeValidator = BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType(Any::class.java)
-                .build()
-            activateDefaultTyping(
-                typeValidator,
-                ObjectMapper.DefaultTyping.NON_FINAL
-            )
-        }
-        return GenericJackson2JsonRedisSerializer(mapper)
+        // Spring Boot의 기본 ObjectMapper 사용 (있으면) - JavaTimeModule 등 이미 설정됨
+        // 없으면 기본 생성자 사용
+        return objectMapper?.let {
+            GenericJackson2JsonRedisSerializer(it)
+        } ?: GenericJackson2JsonRedisSerializer()
     }
 }
