@@ -44,6 +44,8 @@ class JwtTokenProvider(
             .compact()
     }
 
+    fun getRefreshExpirationMillis(): Long = refreshExpiration
+
     fun getUserIdFromToken(token: String): Long {
         val claims = getClaims(token)
         return claims.subject.toLong()

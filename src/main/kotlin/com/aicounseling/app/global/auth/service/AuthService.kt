@@ -18,6 +18,7 @@ class AuthService(
     private val userService: UserService,
     private val jwtTokenProvider: JwtTokenProvider,
     private val oauthTokenCacheService: OAuthTokenCacheService,
+    private val refreshTokenService: RefreshTokenService,
 ) {
     fun loginWithOAuth(
         token: String,
@@ -45,16 +46,29 @@ class AuthService(
 
         val userId = jwtTokenProvider.getUserIdFromToken(refreshToken)
 
-        // UserService를 통해 사용자 조회
         val user =
             try {
                 userService.getUser(userId)
             } catch (e: NoSuchElementException) {
-                // 원본 예외 메시지를 포함하여 UnauthorizedException으로 변환
                 throw UnauthorizedException("사용자를 찾을 수 없습니다: ${e.message}")
             }
 
-        return createAuthResponse(user)
+        val newAccessToken = jwtTokenProvider.createToken(user.id, user.email)
+        val newRefreshToken = jwtTokenProvider.createRefreshToken(user.id)
+
+        try {
+            refreshTokenService.rotate(user.id, refreshToken, newRefreshToken)
+        } catch (e: UnauthorizedException) {
+            throw e
+        }
+
+        return AuthResponse(
+            accessToken = newAccessToken,
+            refreshToken = newRefreshToken,
+            userId = user.id,
+            email = user.email,
+            nickname = user.nickname,
+        )
     }
 
     private fun findOrCreateUser(
@@ -87,6 +101,8 @@ class AuthService(
     private fun createAuthResponse(user: User): AuthResponse {
         val accessToken = jwtTokenProvider.createToken(user.id, user.email)
         val refreshToken = jwtTokenProvider.createRefreshToken(user.id)
+
+        refreshTokenService.save(user.id, refreshToken)
 
         return AuthResponse(
             accessToken = accessToken,
