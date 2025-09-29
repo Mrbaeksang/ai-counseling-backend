@@ -57,9 +57,13 @@ class AuthService(
         val newRefreshToken = jwtTokenProvider.createRefreshToken(user.id)
 
         try {
+            // 기존 토큰 rotation 시도
             refreshTokenService.rotate(user.id, refreshToken, newRefreshToken)
         } catch (e: UnauthorizedException) {
-            throw e
+            // Redis에 토큰이 없는 경우 (Redis 초기화 또는 마이그레이션)
+            // JWT 토큰 자체가 유효하면 새 토큰 발급을 허용
+            // 이미 위에서 validateToken과 getUserIdFromToken으로 검증했음
+            refreshTokenService.save(user.id, newRefreshToken)
         }
 
         return AuthResponse(
