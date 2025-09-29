@@ -454,7 +454,8 @@ class ChatSessionService(
         rawResponse: String,
     ): ParsedResponse {
         return try {
-            val jsonNode = objectMapper.readTree(cleanedResponse)
+            val preprocessed = preprocessJsonContent(cleanedResponse)
+            val jsonNode = objectMapper.readTree(preprocessed)
 
             val content =
                 jsonNode.get("content")?.asText()?.takeIf { it.isNotBlank() }
@@ -471,6 +472,17 @@ class ChatSessionService(
         } catch (e: JsonProcessingException) {
             logger.error("JSON 파싱 실패: {}", e.message)
             parseFallbackResponse(rawResponse)
+        }
+    }
+
+    private fun preprocessJsonContent(json: String): String {
+        // content 필드를 찾아서 내부의 줄바꿈 문자들을 이스케이프
+        return json.replace(Regex(""""content"\s*:\s*"([^"]*(?:\\"[^"]*)*)"""")) { matchResult ->
+            val content = matchResult.groupValues[1]
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t")
+            """"content": "$content""""
         }
     }
 
