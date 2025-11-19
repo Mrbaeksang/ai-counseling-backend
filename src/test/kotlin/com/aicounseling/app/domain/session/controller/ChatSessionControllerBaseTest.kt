@@ -7,6 +7,7 @@ import com.aicounseling.app.domain.session.repository.MessageRepository
 import com.aicounseling.app.domain.session.report.repository.MessageReportRepository
 import com.aicounseling.app.domain.user.entity.User
 import com.aicounseling.app.domain.user.repository.UserRepository
+import com.aicounseling.app.global.auth.service.RefreshTokenService
 import com.aicounseling.app.global.security.AuthProvider
 import com.aicounseling.app.global.security.JwtTokenProvider
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -28,10 +29,14 @@ import org.springframework.transaction.annotation.Transactional
  * ChatSessionController 테스트 기본 클래스
  * 공통 설정과 헬퍼 메서드 제공
  */
+import com.aicounseling.app.domain.session.service.AiCounselingSupport
+import org.springframework.context.annotation.Import
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@Import(AiCounselingSupport::class)
 abstract class ChatSessionControllerBaseTest(
     protected val mockMvc: MockMvc,
     protected val objectMapper: ObjectMapper,
@@ -44,6 +49,9 @@ abstract class ChatSessionControllerBaseTest(
 ) {
     @MockkBean(relaxed = true)
     protected lateinit var chatClient: ChatClient
+
+    @MockkBean(relaxed = true)
+    protected lateinit var refreshTokenService: RefreshTokenService
 
     companion object {
         private val dotenv =
